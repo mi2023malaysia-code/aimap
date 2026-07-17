@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#08111f" />
+    <title>DISC Assessment Prototype</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <main class="shell">
+      <header class="hero card">
+        <div class="hero-copy">
+          <p class="eyebrow">DISC assessment prototype</p>
+          <h1>Find your first-job style with a short, on-screen DISC flow.</h1>
+          <p class="hero-text">
+            This prototype collects identity details, serves a randomized 10-question
+            assessment, calculates DISC scores, and shows a static report with career and
+            growth suggestions.
+          </p>
+          <div class="hero-tags" aria-label="Prototype highlights">
+            <span>No login</span>
+            <span>10 random questions</span>
+            <span>Radar chart</span>
+            <span>Session logging</span>
+          </div>
+        </div>
+        <aside class="hero-note">
+          <p class="hero-note-label">Fresh graduate focus</p>
+          <p>
+            Report guidance is written for a first job search, with a practical, career-ready
+            lens instead of generic personality language.
+          </p>
+        </aside>
+      </header>
+
+      <section class="workspace">
+        <aside class="rail card">
+          <div class="rail-top">
+            <p class="eyebrow">Assessment lane</p>
+            <h2>Logged as you move.</h2>
+          </div>
+
+          <div class="metric">
+            <span>Record</span>
+            <strong id="record-id">Pending</strong>
+          </div>
+          <div class="metric">
+            <span>Progress</span>
+            <strong id="progress-label">0%</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+
+          <ol class="step-list" aria-label="Assessment steps">
+            <li data-step-item="identity">
+              <span>1</span>
+              <div>
+                <strong>Identity</strong>
+                <small>Name, email, consent</small>
+              </div>
+            </li>
+            <li data-step-item="questions">
+              <span>2</span>
+              <div>
+                <strong>Questions</strong>
+                <small>3 per page, 10 total</small>
+              </div>
+            </li>
+            <li data-step-item="result">
+              <span>3</span>
+              <div>
+                <strong>Result</strong>
+                <small>Scores, chart, guidance</small>
+              </div>
+            </li>
+            <li data-step-item="feedback">
+              <span>4</span>
+              <div>
+                <strong>Feedback</strong>
+                <small>Accuracy + open text</small>
+              </div>
+            </li>
+          </ol>
+
+          <div class="rail-note" id="rail-note">
+            Enter your details to create the assessment session.
+          </div>
+        </aside>
+
+        <section class="panel card">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow" id="panel-kicker">Step 1</p>
+              <h2 id="panel-title">Identity capture</h2>
+            </div>
+            <div class="panel-status" id="panel-status">Ready to begin</div>
+          </div>
+
+          <div id="app"></div>
+        </section>
+      </section>
+
+      <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "disc-assessment-prototype",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone local DISC assessment prototype based on the PRD.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
+

@@ -1,10 +1,4 @@
-const {
-  buildReport,
-  computeScores,
-  normalizeQuestions,
-  sanitizeAnswers,
-  nowIso,
-} = require('../../../lib/disc-core');
+const { completeAssessmentSession } = require('../../../lib/assessment-service');
 const { getRequestPath, readJsonBody, sendJson, sendText } = require('../../_helpers');
 
 function getAssessmentId(req) {
@@ -30,27 +24,12 @@ module.exports = function completeAssessmentHandler(req, res) {
 
   readJsonBody(req)
     .then((body) => {
-      const questions = normalizeQuestions(body.questions || body.questionsPresented || []);
-      if (questions.length === 0) {
-        sendJson(res, 400, {
-          error: 'Questions are required to calculate the report.',
-        });
-        return;
-      }
-
-      const answers = sanitizeAnswers(questions, body.answers || {});
-      const scores = computeScores(questions, answers);
-      const report = buildReport(scores);
-      const completedAt = nowIso();
-
-      sendJson(res, 200, {
-        assessmentId,
-        completedAt,
-        scores,
-        report,
-      });
+      return completeAssessmentSession(assessmentId, body);
+    })
+    .then((result) => {
+      sendJson(res, 200, result);
     })
     .catch((error) => {
-      sendJson(res, 400, { error: error.message });
+      sendJson(res, error.statusCode || 400, { error: error.message });
     });
 };

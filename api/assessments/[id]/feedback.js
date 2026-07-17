@@ -1,4 +1,4 @@
-const { nowIso } = require('../../../lib/disc-core');
+const { submitFeedbackSession } = require('../../../lib/assessment-service');
 const { getRequestPath, readJsonBody, sendJson, sendText } = require('../../_helpers');
 
 function getAssessmentId(req) {
@@ -24,24 +24,12 @@ module.exports = function feedbackAssessmentHandler(req, res) {
 
   readJsonBody(req)
     .then((body) => {
-      const accuracyRating = Number.parseInt(body.accuracyRating, 10);
-      if (!(accuracyRating >= 1 && accuracyRating <= 7)) {
-        sendJson(res, 400, { error: 'Accuracy rating must be between 1 and 7.' });
-        return;
-      }
-
-      const submittedAt = nowIso();
-      sendJson(res, 200, {
-        assessmentId,
-        completedAt: submittedAt,
-        feedback: {
-          accuracyRating,
-          additionalFeedback: String(body.additionalFeedback || '').trim(),
-          submittedAt,
-        },
-      });
+      return submitFeedbackSession(assessmentId, body);
+    })
+    .then((result) => {
+      sendJson(res, 200, result);
     })
     .catch((error) => {
-      sendJson(res, 400, { error: error.message });
+      sendJson(res, error.statusCode || 400, { error: error.message });
     });
 };

@@ -26,6 +26,7 @@ const state = {
   pageSize: PAGE_SIZE,
   pageCount: 0,
   totalQuestions: 10,
+  questionBankSize: 0,
   questions: [],
   currentPage: 0,
   identity: {
@@ -302,6 +303,7 @@ function renderQuestionsStep() {
   const isFirstPage = state.currentPage === 0;
   const isLastPage = state.currentPage === state.pageCount - 1;
   const answered = Object.keys(state.answers).length;
+  const bankSize = state.questionBankSize || 30;
 
   return `
     <form id="questions-form" class="flow">
@@ -310,6 +312,9 @@ function renderQuestionsStep() {
         <p>
           Answer the three statements on this page. Your progress is saved whenever you move
           forward or back.
+        </p>
+        <p class="field-help">
+          This session sampled ${state.totalQuestions} questions from a ${bankSize}-question bank.
         </p>
 
         <div class="question-meta">
@@ -579,6 +584,7 @@ async function createAssessmentFromIdentity(form) {
     state.pageCount = data.pageCount || Math.ceil((data.questions || []).length / PAGE_SIZE);
     state.totalQuestions = data.totalQuestions || 10;
     state.questions = Array.isArray(data.questions) ? data.questions : [];
+    state.questionBankSize = data.questionBankSize || 0;
     state.identity = identity;
     state.answers = {};
     state.currentPage = 0;
@@ -665,7 +671,6 @@ async function submitQuestionPage(form) {
         },
         body: JSON.stringify({
           answers: state.answers,
-          questions: state.questions,
           from: 'questions',
         }),
       });
@@ -806,6 +811,7 @@ function resetAssessment() {
   state.pageSize = PAGE_SIZE;
   state.pageCount = 0;
   state.totalQuestions = 10;
+  state.questionBankSize = 0;
   state.questions = [];
   state.currentPage = 0;
   state.identity = {
@@ -970,6 +976,13 @@ function syncFormDefaults() {
   }
 }
 
+function syncRadioOptionClasses(form, optionSelector) {
+  form.querySelectorAll(optionSelector).forEach((option) => {
+    const radio = option.querySelector('input[type="radio"]');
+    option.classList.toggle('is-selected', Boolean(radio && radio.checked));
+  });
+}
+
 function wireCurrentFormHandlers() {
   const form = app.querySelector('form');
   if (!form) {
@@ -985,9 +998,16 @@ function wireCurrentFormHandlers() {
   }
 
   if (state.phase === 'questions') {
+    syncRadioOptionClasses(form, '.likert-option');
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       submitQuestionPage(form);
+    });
+    const questionInputs = form.querySelectorAll('input[type="radio"]');
+    questionInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        syncRadioOptionClasses(form, '.likert-option');
+      });
     });
     const backButton = form.querySelector('[data-action="back"]');
     if (backButton) {
@@ -999,6 +1019,7 @@ function wireCurrentFormHandlers() {
   }
 
   if (state.phase === 'feedback') {
+    syncRadioOptionClasses(form, '.rating-option');
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       submitFeedback(form);
@@ -1007,10 +1028,7 @@ function wireCurrentFormHandlers() {
     ratingInputs.forEach((input) => {
       input.addEventListener('change', () => {
         state.feedback.accuracyRating = Number.parseInt(input.value, 10);
-        form.querySelectorAll('.rating-option').forEach((option) => {
-          const radio = option.querySelector('input');
-          option.classList.toggle('is-selected', Boolean(radio && radio.checked));
-        });
+        syncRadioOptionClasses(form, '.rating-option');
       });
     });
     const textarea = form.querySelector('#additionalFeedback');

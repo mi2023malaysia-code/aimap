@@ -96,6 +96,25 @@ const questionBank = typeOrder.reduce((bank, type) => {
   return bank.concat(typedQuestions);
 }, []);
 
+// Seed set used to populate Supabase on the first run.
+// This keeps the runtime bank at 30 questions while preserving a balanced mix.
+const seedLayout = {
+  D: 8,
+  I: 8,
+  S: 7,
+  C: 7,
+};
+
+const questionSeed = typeOrder.reduce((bank, type) => {
+  const texts = questionTextMap[type].slice(0, seedLayout[type]);
+  const seedQuestions = texts.map((text, index) => ({
+    id: `${type}${String(index + 1).padStart(2, '0')}`,
+    type,
+    text,
+  }));
+  return bank.concat(seedQuestions);
+}, []);
+
 function profile(headline, summary, careerSuggestions, growthSuggestions, jobSearchTip) {
   return {
     headline,
@@ -203,8 +222,8 @@ const profileLibrary = {
 
 module.exports = {
   questionBank,
+  questionSeed,
   profileLibrary,
   typeMeta,
   typeOrder,
 };
-

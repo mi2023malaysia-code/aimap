@@ -1,4 +1,4 @@
-const { nowIso } = require('../../lib/disc-core');
+const { updateAssessmentSession } = require('../../lib/assessment-service');
 const { getRequestPath, readJsonBody, sendJson, sendText } = require('../_helpers');
 
 function getAssessmentId(req) {
@@ -24,13 +24,12 @@ module.exports = function updateAssessmentHandler(req, res) {
 
   readJsonBody(req)
     .then((body) => {
-      sendJson(res, 200, {
-        assessmentId,
-        updatedAt: nowIso(),
-        status: body.status || 'questioning',
-      });
+      return updateAssessmentSession(assessmentId, body);
+    })
+    .then((result) => {
+      sendJson(res, 200, result);
     })
     .catch((error) => {
-      sendJson(res, 400, { error: error.message });
+      sendJson(res, error.statusCode || 400, { error: error.message });
     });
 };

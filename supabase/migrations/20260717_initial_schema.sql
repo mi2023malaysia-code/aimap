@@ -29,9 +29,9 @@ create table if not exists public.assessment_sessions (
   scores jsonb,
   report jsonb,
   feedback jsonb,
-  page_size integer not null default 3,
-  total_questions integer not null default 10,
-  page_count integer not null default 4,
+  page_size integer not null default 4,
+  total_questions integer not null default 20,
+  page_count integer not null default 5,
   completed_at timestamptz
 );
 

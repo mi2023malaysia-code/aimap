@@ -6,7 +6,7 @@ const TYPE_META = {
 };
 
 const TYPE_ORDER = ['D', 'I', 'S', 'C'];
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 4;
 
 const app = document.getElementById('app');
 const toast = document.getElementById('toast');
@@ -25,7 +25,7 @@ const state = {
   assessmentId: null,
   pageSize: PAGE_SIZE,
   pageCount: 0,
-  totalQuestions: 10,
+  totalQuestions: 20,
   questionBankSize: 0,
   questions: [],
   currentPage: 0,
@@ -102,9 +102,9 @@ function getPhaseLabel() {
       };
     case 'questions':
       return {
-        title: `Step 2 of ${state.pageCount || 4}`,
+        title: `Step 2 of ${state.pageCount || 5}`,
         panel: 'Question pages',
-        status: `Page ${state.currentPage + 1} of ${state.pageCount || 4}`,
+        status: `Page ${state.currentPage + 1} of ${state.pageCount || 5}`,
         note: 'Each page transition is saved for this assessment session.',
       };
     case 'result':
@@ -141,15 +141,16 @@ function getPhaseLabel() {
 function getProgressPercent() {
   switch (state.phase) {
     case 'identity':
-      return 12;
+      return 0;
     case 'questions': {
       const pageCount = Math.max(state.pageCount, 1);
-      return 20 + (((state.currentPage + 1) / pageCount) * 48);
+      const completedPages = Math.max(0, Math.min(state.currentPage, pageCount));
+      return (completedPages / pageCount) * 100;
     }
     case 'result':
-      return 78;
+      return 100;
     case 'feedback':
-      return 92;
+      return 100;
     case 'done':
       return 100;
     default:
@@ -270,7 +271,6 @@ function renderIdentityStep() {
 
 function renderQuestionCard(question) {
   const currentValue = state.answers[question.id];
-  const meta = TYPE_META[question.type];
   const options = Array.from({ length: 7 }, (_, index) => index + 1)
     .map((rating) => {
       const selected = Number(currentValue) === rating;
@@ -287,7 +287,6 @@ function renderQuestionCard(question) {
     <section class="question-card">
       <div class="question-top">
         <span>Q${question.order} of ${state.totalQuestions}</span>
-        <strong>${escapeHtml(meta.short)} - ${escapeHtml(meta.label)}</strong>
       </div>
       <h3>${escapeHtml(question.text)}</h3>
       <div class="question-scale">1 = strongly disagree, 7 = strongly agree</div>
@@ -310,7 +309,7 @@ function renderQuestionsStep() {
       <section class="flow-card">
         <h3>Page ${state.currentPage + 1} of ${state.pageCount}</h3>
         <p>
-          Answer the three statements on this page. Your progress is saved whenever you move
+          Answer the four statements on this page. Your progress is saved whenever you move
           forward or back.
         </p>
         <p class="field-help">
@@ -500,17 +499,7 @@ function renderDoneStep() {
         </p>
       </section>
 
-      <section class="flow-card">
-        <h3>What is stored</h3>
-        <ul>
-          <li>Name, email, and optional phone</li>
-          <li>Exact questions shown in this session</li>
-          <li>All answered ratings and calculated DISC scores</li>
-          <li>Accuracy rating and open-text suggestions</li>
-        </ul>
-      </section>
-
-        <div class="nav-bar">
+      <div class="nav-bar">
         <div class="field-help">
           You can restart the flow to create a new assessment session.
         </div>
@@ -582,7 +571,7 @@ async function createAssessmentFromIdentity(form) {
     state.assessmentId = data.assessmentId;
     state.pageSize = data.pageSize || PAGE_SIZE;
     state.pageCount = data.pageCount || Math.ceil((data.questions || []).length / PAGE_SIZE);
-    state.totalQuestions = data.totalQuestions || 10;
+    state.totalQuestions = data.totalQuestions || 20;
     state.questions = Array.isArray(data.questions) ? data.questions : [];
     state.questionBankSize = data.questionBankSize || 0;
     state.identity = identity;
@@ -810,7 +799,7 @@ function resetAssessment() {
   state.assessmentId = null;
   state.pageSize = PAGE_SIZE;
   state.pageCount = 0;
-  state.totalQuestions = 10;
+  state.totalQuestions = 20;
   state.questionBankSize = 0;
   state.questions = [];
   state.currentPage = 0;

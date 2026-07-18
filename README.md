@@ -5,12 +5,12 @@ This repository contains a standalone, local DISC web app prototype built from t
 ## What it does
 
 - Captures identity details on the first screen.
-- Randomly selects 10 questions from a 30-question DISC bank.
-- Splits the assessment into 3-question pages with back/next navigation.
+- Randomly selects 20 questions from a 30-question DISC bank.
+- Splits the assessment into 4-question pages with back/next navigation.
 - Computes 1-100 DISC scores and renders a radar chart.
 - Shows static career and self-improvement guidance for the dominant profile.
 - Logs every transition, answers, scores, and feedback to Supabase when configured.
-- Seeds a 30-question bank on the first assessment start and samples 10 questions per session.
+- Seeds a 30-question bank on the first assessment start and samples 20 questions per session.
 
 ## Run locally
 
@@ -66,7 +66,7 @@ If your default Node install cannot verify Supabase's TLS certificate on Windows
 
 A starter template is available in [`.env.example`](C:/Users/pc/Documents/106a/.env.example).
 
-Before first use, run the SQL in `supabase/migrations/20260717_initial_schema.sql` in your Supabase project. The app will seed the 30-question bank automatically the first time an assessment starts.
+Before first use, apply the SQL migrations in `supabase/migrations/` in order in your Supabase project. The app will seed the 30-question bank automatically the first time an assessment starts.
 
 ## Data storage
 

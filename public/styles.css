@@ -488,15 +488,11 @@ body::after {
 
 .question-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   flex-wrap: wrap;
   color: var(--soft);
   margin-bottom: 10px;
-}
-
-.question-top strong {
-  color: var(--accent);
 }
 
 .question-card h3 {

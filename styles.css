@@ -133,6 +133,7 @@ body:not([data-page-state="intro"]) .hero-cta {
 .hero-copy {
   padding: 34px;
   position: relative;
+  text-align: center;
 }
 
 .hero-copy::after {

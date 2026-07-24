@@ -525,12 +525,16 @@
       return;
     }
 
+    if (state.currentPage === 0) {
+      backBtn.hidden = true;
+      nextBtn.hidden = true;
+      return;
+    }
+
     backBtn.hidden = state.currentPage === 0;
     nextBtn.hidden = false;
 
-    if (state.currentPage === 0) {
-      nextBtn.textContent = "Begin assessment";
-    } else if (state.currentPage === 7) {
+    if (state.currentPage === 7) {
       nextBtn.textContent = "Generate result";
     } else {
       nextBtn.textContent = "Continue";
@@ -1665,7 +1669,9 @@
     const roadmap = computeRoadmap(answers);
     const completion = getCompletion(answers);
     const meta = pageMeta[pageIndex];
+    const pageState = state.locked ? "result" : pageIndex === 0 ? "intro" : "wizard";
 
+    document.body.dataset.pageState = pageState;
     pageTitle.textContent = meta.title;
     pageSubtitle.textContent = meta.subtitle;
     pageCopy.textContent = meta.copy;
@@ -1968,6 +1974,16 @@
   }
 
   function wireEvents() {
+    const startButtons = document.querySelectorAll(
+      '[data-action="start-assessment"]'
+    );
+    startButtons.forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        handleNext();
+      });
+    });
+
     form.addEventListener("input", function (event) {
       const target = event.target;
       if (!(target instanceof HTMLElement)) {

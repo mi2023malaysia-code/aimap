@@ -5,33 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Fluency Instrument is a signal check for AI learning level and path recommendation."
+      content="Fluency Instrument is a signal check for AI Fluency and path recommendation."
     />
-    <title>Fluency Instrument | AI Learning Level Assessment</title>
+    <title>Fluency Instrument | AI Fluency Assessment</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260723-2" />
+    <link rel="stylesheet" href="styles.css?v=20260724-12" />
   </head>
-  <body>
+  <body data-page-state="intro">
     <div class="paper-texture" aria-hidden="true"></div>
     <div class="page-shell">
       <header class="hero">
         <section class="hero-copy panel">
           <p class="eyebrow">Fluency Instrument</p>
-          <h1>AI Learning Level Assessment &amp; Roadmap</h1>
+          <h1>AI Fluency Assessment &amp; Roadmap</h1>
           <p class="lede">
             Map your current AI fluency, capture what you want to solve, and
             generate a practical roadmap that fits your level.
           </p>
-          <div class="hero-meta" aria-label="product highlights">
-            <span>9-page wizard</span>
-            <span>Locked result after submit</span>
-            <span>Personal roadmap</span>
-          </div>
         </section>
 
         <aside class="status-panel panel" aria-live="polite">
@@ -69,6 +64,17 @@
         </aside>
       </header>
 
+      <div class="hero-cta">
+        <button
+          type="button"
+          class="primary-btn hero-start"
+          data-action="start-assessment"
+          aria-label="Start assessment"
+        >
+          ##### START ASSESSMENT #####
+        </button>
+      </div>
+
       <main class="layout">
         <form id="wizard-form" class="wizard panel" novalidate>
           <div class="section-heading">
@@ -95,7 +101,7 @@
               Back
             </button>
             <button type="submit" class="primary-btn" data-action="next">
-              Begin assessment
+              ##### START ASSESSMENT #####
             </button>
           </div>
         </form>
@@ -103,7 +109,7 @@
         <aside class="side panel">
           <div class="side-head">
             <p class="kicker">Roadmap</p>
-            <h3 data-side-title>AI learning levels</h3>
+            <h3 data-side-title>AI fluency levels</h3>
             <p data-side-subtitle>
               Preview the likely route before you submit.
             </p>
@@ -113,6 +119,6 @@
       </main>
     </div>
 
-    <script src="app.js?v=20260723-2"></script>
+    <script src="app.js?v=20260724-10"></script>
   </body>
 </html>

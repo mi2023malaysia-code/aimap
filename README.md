@@ -1,6 +1,6 @@
 # Fluency Instrument
 
-A static Sprint 1 MVP for the AI Learning Level Assessment and Path Recommender.
+A static Sprint 1 MVP for the AI Fluency Assessment and Path Recommender.
 
 ## What is included
 

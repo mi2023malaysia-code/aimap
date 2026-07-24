@@ -136,3 +136,12 @@ resume
 
 Assistant 13:
 Refactored the app to use a 1-7 self-rating and a 1-100 AI fluency score, simplified the scoring formula, updated the visible labels, and verified the local page loads with no console errors.
+
+[2026-07-24T12:01:44+08:00] User 17-19: selected option 2 for the assessment question, asked to rework it, asked for the current question list, and moved the work toward the webapp.
+[2026-07-24T12:01:44+08:00] Assistant 14-16: reworked the assessment question wording, kept the scoring model aligned, and listed the current assessment questions.
+[2026-07-24T12:01:44+08:00] User 20-24: asked to run the webapp locally, refine page 1 UI, confirm the local URL, and append the conversation log before committing.
+[2026-07-24T12:01:44+08:00] Assistant 17-21: started the local app, updated the selected-button styling and intro CTA, shared the local URL, and appended the latest conversation segment to `inout.log`.
+[2026-07-24T12:01:44+08:00] User 25-32: continued with the GitHub repo link and multiple page-1 and selected-button UI tweaks, including button placement and visibility changes.
+[2026-07-24T12:01:44+08:00] Assistant 22-29: used the repo link, restyled the selected buttons, moved the start CTA, hid the rest of page 1, and turned the start text into a clickable button.
+[2026-07-24T12:01:44+08:00] User 33-36: moved the start CTA below Fluency Instrument, made `9-page wizard` trigger the start flow, removed the extra hero pills, relabeled the CTA, added hover color, and expanded the intro copy width.
+[2026-07-24T12:01:44+08:00] Assistant 30-32: repositioned and wired the CTA, converted the badge into a trigger, removed the extra pills, updated the label and hover behavior, and verified the intro-to-wizard flow in Chrome.

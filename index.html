@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Fluency Instrument is a signal check for AI learning level and path recommendation."
+    />
+    <title>Fluency Instrument | AI Learning Level Assessment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260723-2" />
+  </head>
+  <body>
+    <div class="paper-texture" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="hero">
+        <section class="hero-copy panel">
+          <p class="eyebrow">Fluency Instrument</p>
+          <h1>AI Learning Level Assessment &amp; Roadmap</h1>
+          <p class="lede">
+            Map your current AI fluency, capture what you want to solve, and
+            generate a practical roadmap that fits your level.
+          </p>
+          <div class="hero-meta" aria-label="product highlights">
+            <span>9-page wizard</span>
+            <span>Locked result after submit</span>
+            <span>Personal roadmap</span>
+          </div>
+        </section>
+
+        <aside class="status-panel panel" aria-live="polite">
+          <div class="gauge" data-gauge data-band="beginner">
+            <div class="gauge__track"></div>
+            <div class="gauge__fill"></div>
+            <div class="gauge__center">
+              <span class="gauge__label" data-dial-label>Page</span>
+              <strong class="gauge__level" data-dial-value>1/9</strong>
+              <span class="gauge__track-name" data-dial-track>Objective</span>
+              <span class="gauge__status" data-dial-status
+                >Start with the overview</span
+              >
+            </div>
+          </div>
+
+          <div class="status-meta">
+            <div>
+              <span>Current page</span>
+              <strong data-status-page>1 of 9</strong>
+            </div>
+            <div>
+              <span>Progress</span>
+              <strong data-status-progress>11%</strong>
+            </div>
+            <div>
+              <span>AI fluency score</span>
+              <strong data-status-level>1/100</strong>
+            </div>
+            <div>
+              <span>Preview track</span>
+              <strong data-status-track>Waiting</strong>
+            </div>
+          </div>
+        </aside>
+      </header>
+
+      <main class="layout">
+        <form id="wizard-form" class="wizard panel" novalidate>
+          <div class="section-heading">
+            <p class="kicker">Assessment</p>
+            <h2 data-page-title>Objective</h2>
+            <p data-page-subtitle>
+              Understand your current AI level and the roadmap that fits it.
+            </p>
+          </div>
+
+          <div class="wizard-copy" data-page-copy>
+            Answer the guided pages in order. You can move back and forward
+            until you submit the final result.
+          </div>
+
+          <div class="step-strip" data-step-strip aria-label="Progress steps"></div>
+
+          <div class="wizard-error" data-form-error hidden></div>
+
+          <div id="page-content" class="page-content"></div>
+
+          <div class="wizard-footer">
+            <button type="button" class="secondary-btn" data-action="back">
+              Back
+            </button>
+            <button type="submit" class="primary-btn" data-action="next">
+              Begin assessment
+            </button>
+          </div>
+        </form>
+
+        <aside class="side panel">
+          <div class="side-head">
+            <p class="kicker">Roadmap</p>
+            <h3 data-side-title>AI learning levels</h3>
+            <p data-side-subtitle>
+              Preview the likely route before you submit.
+            </p>
+          </div>
+          <div class="side-body" data-side-body></div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js?v=20260723-2"></script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 (function () {
   const TOTAL_PAGES = 9;
   const RESULT_PAGE_INDEX = 8;
-  const TOTAL_COMPLETION_SECTIONS = 13;
+  const TOTAL_COMPLETION_SECTIONS = 14;
 
   const form = document.getElementById("wizard-form");
   const pageContent = document.getElementById("page-content");
@@ -70,7 +70,7 @@
     },
     {
       title: "Weighted Assessment",
-      subtitle: "Rate the five factors that make up your AI fluency score.",
+      subtitle: "Rate the six factors that make up your AI fluency score.",
       copy:
         "Each factor uses a 1-5 scale and a different weight in the final score.",
       step: "Assessment",
@@ -168,7 +168,7 @@
     {
       key: "verificationJudgment",
       title: "Verification and judgment",
-      weight: 20,
+      weight: 10,
       prompt: "How consistently do you check outputs, judge quality, and catch errors?",
       note: "1 means you rarely verify. 5 means you regularly validate and critique the output.",
     },
@@ -185,6 +185,13 @@
       weight: 10,
       prompt: "How much do you automate, connect tools, or build repeatable AI workflows?",
       note: "1 means no automation yet. 5 means you regularly build or automate with AI.",
+    },
+    {
+      key: "timeCostCommitment",
+      title: "Time & cost commitment",
+      weight: 10,
+      prompt: "How much weekly time and budget can you realistically commit to learning and using AI?",
+      note: "1 means very limited time or budget. 5 means you can consistently invest both.",
     },
   ];
 
@@ -448,6 +455,7 @@
       verificationJudgment: "",
       workflowIntegration: "",
       automationBuilding: "",
+      timeCostCommitment: "",
       training: "",
       trainingCourse: "",
     };
@@ -623,6 +631,7 @@
     const verificationJudgment = getAssessmentRating(answers, "verificationJudgment");
     const workflowIntegration = getAssessmentRating(answers, "workflowIntegration");
     const automationBuilding = getAssessmentRating(answers, "automationBuilding");
+    const timeCostCommitment = getAssessmentRating(answers, "timeCostCommitment");
 
     const factorScores = assessmentQuestions.map(function (factor) {
       const rating = getAssessmentRating(answers, factor.key);
@@ -654,6 +663,7 @@
       verificationJudgment: verificationJudgment,
       workflowIntegration: workflowIntegration,
       automationBuilding: automationBuilding,
+      timeCostCommitment: timeCostCommitment,
       factorScores: factorScores,
       tools: tools,
       toolCount: tools.length,
@@ -696,6 +706,7 @@
       assessmentComplete[2],
       assessmentComplete[3],
       assessmentComplete[4],
+      assessmentComplete[5],
       trainingComplete,
     ];
   }
@@ -1833,6 +1844,7 @@
       state.answers.verificationJudgment = getRadioValue("verificationJudgment");
       state.answers.workflowIntegration = getRadioValue("workflowIntegration");
       state.answers.automationBuilding = getRadioValue("automationBuilding");
+      state.answers.timeCostCommitment = getRadioValue("timeCostCommitment");
     } else if (state.currentPage === 7) {
       state.answers.training = getRadioValue("training");
       state.answers.trainingCourse = cleanText(getFieldValue("trainingCourse"), 80);
@@ -1918,7 +1930,7 @@
           : state.currentPage === 5
           ? "Select the primary goal for this assessment."
           : state.currentPage === 6
-          ? "Rate the five factors that shape your AI fluency score."
+          ? "Rate the six factors that shape your AI fluency score."
           : state.currentPage === 7
           ? "Confirm whether you have completed formal paid training and share the course name if you have."
           : "Complete the highlighted fields before continuing.";

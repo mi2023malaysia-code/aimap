@@ -6,7 +6,7 @@ A static Sprint 1 MVP for the AI Fluency Assessment and Path Recommender.
 
 - Warm paper-style visual system
 - Live dial that fills as answers are entered
-- Simple 5-factor weighted assessment mapped to a 1-100 AI fluency score
+- Simple 6-factor weighted assessment mapped to a 1-100 AI fluency score
 - Goal-driven track recommendation
 - Time-based pacing note and duration estimate
 - Week-by-week module list

@@ -24,6 +24,12 @@
   const statusProgress = document.querySelector("[data-status-progress]");
   const statusLevel = document.querySelector("[data-status-level]");
   const statusTrack = document.querySelector("[data-status-track]");
+  const SUPABASE_CONFIG = window.__SUPABASE_CONFIG__ || {};
+  const SUPABASE_URL = SUPABASE_CONFIG.url || "";
+  const SUPABASE_PUBLISHABLE_KEY =
+    SUPABASE_CONFIG.publishableKey || SUPABASE_CONFIG.anonKey || "";
+  const SUPABASE_TABLE = SUPABASE_CONFIG.table || "assessments";
+  const SUPABASE_APP_VERSION = SUPABASE_CONFIG.appVersion || "2026-07-30";
 
   const pageMeta = [
     {
@@ -37,7 +43,7 @@
       title: "Profile",
       subtitle: "Capture the basics, background, and the outcome you want.",
       copy:
-        "We use this page to personalize the roadmap, the language, and the email copy prepared for later.",
+        "We use this page to personalize the roadmap, the language, and the Supabase record prepared for later.",
       step: "Profile",
     },
     {
@@ -86,7 +92,7 @@
       title: "Result",
       subtitle: "Your final recommendation is now locked.",
       copy:
-        "The result screen is read-only. The email copy action is ready for a future send integration.",
+        "The result screen is read-only. The completed assessment can sync to Supabase for storage and reporting.",
       step: "Result",
     },
   ];
@@ -432,6 +438,10 @@
     currentPage: 0,
     locked: false,
     finalResult: null,
+    saveState: {
+      status: "idle",
+      message: "",
+    },
     answers: createInitialAnswers(),
   };
 
@@ -988,6 +998,152 @@
     };
   }
 
+  function getSupabaseSyncMessage() {
+    if (state.saveState.status === "saving") {
+      return "Saving this result to Supabase now.";
+    }
+
+    if (state.saveState.status === "saved") {
+      return "Saved to Supabase and ready for reporting.";
+    }
+
+    if (state.saveState.status === "error") {
+      return (
+        state.saveState.message ||
+        "Supabase sync failed. You can retry from the result screen."
+      );
+    }
+
+    return "This result will sync to Supabase when you finish the assessment.";
+  }
+
+  function getSupabaseSyncButtonLabel() {
+    if (state.saveState.status === "saving") {
+      return "Saving...";
+    }
+
+    if (state.saveState.status === "saved") {
+      return "Sync again";
+    }
+
+    if (state.saveState.status === "error") {
+      return "Retry sync";
+    }
+
+    return "Sync to Supabase";
+  }
+
+  function buildSupabasePayload(answers, roadmap) {
+    const submissionSnapshot = {
+      answers: answers,
+      roadmap: roadmap,
+      submitted_at:
+        typeof Date !== "undefined" ? new Date().toISOString() : "",
+      app_version: SUPABASE_APP_VERSION,
+    };
+
+    return {
+      name: cleanText(answers.name, 80),
+      email: cleanText(answers.email, 120),
+      phone: null,
+      consent_given: true,
+      stage: "submitted",
+      current_page: RESULT_PAGE_INDEX,
+      question_ids: null,
+      answers: submissionSnapshot,
+      score_d: null,
+      score_i: null,
+      score_s: null,
+      score_c: null,
+      dominant_type: roadmap.bandKey || "",
+      paid: answers.paid === "yes",
+      page_timestamps: {
+        submitted_at: submissionSnapshot.submitted_at,
+        completed_pages: RESULT_PAGE_INDEX + 1,
+      },
+    };
+  }
+
+  async function submitAssessmentToSupabase(answers, roadmap) {
+    if (typeof window === "undefined" || window.location.protocol === "file:") {
+      throw new Error(
+        "Open the app through http:// or https:// so Supabase can receive the submission."
+      );
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+      throw new Error("Supabase config is missing from supabase.config.js.");
+    }
+
+    const payload = buildSupabasePayload(answers, roadmap);
+    const response = await fetch(
+      SUPABASE_URL.replace(/\/+$/, "") +
+        "/rest/v1/" +
+        encodeURIComponent(SUPABASE_TABLE),
+      {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: "Bearer " + SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      let errorBody = "";
+      try {
+        errorBody = await response.text();
+      } catch (error) {
+        errorBody = "";
+      }
+
+      throw new Error(
+        errorBody ||
+          "Supabase insert failed with status " + String(response.status) + "."
+      );
+    }
+  }
+
+  async function syncCurrentResult() {
+    if (!state.locked || !state.finalResult) {
+      return;
+    }
+
+    if (state.saveState.status === "saving") {
+      return;
+    }
+
+    const answersSnapshot = JSON.parse(JSON.stringify(state.answers));
+    const roadmapSnapshot = JSON.parse(JSON.stringify(state.finalResult));
+
+    state.saveState = {
+      status: "saving",
+      message: "",
+    };
+    renderPage();
+
+    try {
+      await submitAssessmentToSupabase(answersSnapshot, roadmapSnapshot);
+      state.saveState = {
+        status: "saved",
+        message: "Saved to Supabase.",
+      };
+    } catch (error) {
+      state.saveState = {
+        status: "error",
+        message:
+          error instanceof Error
+            ? cleanText(error.message, 140)
+            : "Supabase sync failed.",
+      };
+    }
+
+    renderPage();
+  }
+
   function renderOptionGroup(name, options, selectedValues, type) {
     return options
       .map(function (option) {
@@ -1409,11 +1565,19 @@
 
     const toolPlanItems = roadmap.toolPlan;
     const moduleCards = roadmap.modules;
+    const syncMessage = getSupabaseSyncMessage();
+    const syncButtonLabel = getSupabaseSyncButtonLabel();
+    const syncBadgeText =
+      state.saveState.status === "saved"
+        ? "Saved to Supabase"
+        : state.saveState.status === "saving"
+        ? "Syncing to Supabase"
+        : "Supabase sync ready";
 
     const summaryMeta =
       '<div class="result-meta">' +
       "<span>Locked result</span>" +
-      "<span>Email copy ready</span>" +
+      "<span>" + escapeHtml(syncBadgeText) + "</span>" +
       "<span>No further edits</span>" +
       "</div>";
 
@@ -1491,14 +1655,16 @@
       "</ul>" +
       "</section>";
 
-    const emailCard =
+    const syncCard =
       '<section class="result-block send-card">' +
-      "<h3>Email copy</h3>" +
-      "<p>Send your result to <strong>" +
-      escapeHtml(answers.email) +
-      "</strong>.</p>" +
-      '<p class="send-status" data-send-status>Email sending is not connected yet. This can be wired to a real send flow in a future release.</p>' +
-      '<button type="button" class="primary-btn" data-action="send-now">Send now</button>' +
+      "<h3>Supabase sync</h3>" +
+      "<p>The contact email you entered is stored with the assessment result.</p>" +
+      '<p class="send-status" data-send-status>' +
+      escapeHtml(syncMessage) +
+      "</p>" +
+      '<button type="button" class="primary-btn" data-action="sync-now">' +
+      escapeHtml(syncButtonLabel) +
+      "</button>" +
       "</section>";
 
     const moduleList =
@@ -1563,7 +1729,7 @@
       signalCard +
       toolCard +
       "</div>" +
-      emailCard +
+      syncCard +
       moduleList +
       "</section>"
     );
@@ -1689,7 +1855,7 @@
     stepStrip.innerHTML = renderStepStrip(pageIndex, state.locked);
     sideTitle.textContent = state.locked ? "Final roadmap" : "Live preview";
     sideSubtitle.textContent = state.locked
-      ? "The result is locked and the email copy action is ready."
+      ? "The result is locked and the Supabase sync status updates below."
       : "The right-hand signal updates as you answer each section.";
 
     if (state.locked) {
@@ -1945,8 +2111,13 @@
       state.finalResult = computeRoadmap(state.answers);
       state.locked = true;
       state.currentPage = RESULT_PAGE_INDEX;
+      state.saveState = {
+        status: "idle",
+        message: "",
+      };
       renderPage();
       window.scrollTo({ top: 0, behavior: "smooth" });
+      void syncCurrentResult();
       return;
     }
 
@@ -1972,17 +2143,17 @@
     state.currentPage = 0;
     state.locked = false;
     state.finalResult = null;
+    state.saveState = {
+      status: "idle",
+      message: "",
+    };
     state.answers = createInitialAnswers();
     renderPage();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleSendNow() {
-    const status = form.querySelector("[data-send-status]");
-    if (status) {
-      status.textContent =
-        "This is a UI-only placeholder for the future email send flow.";
-    }
+  function handleSyncNow() {
+    void syncCurrentResult();
   }
 
   function wireEvents() {
@@ -2036,9 +2207,9 @@
         event.preventDefault();
         handleReset();
       }
-      if (target.closest('[data-action="send-now"]')) {
+      if (target.closest('[data-action="sync-now"]')) {
         event.preventDefault();
-        handleSendNow();
+        handleSyncNow();
       }
     });
   }

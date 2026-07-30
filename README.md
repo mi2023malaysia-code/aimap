@@ -71,7 +71,7 @@ Before first use, apply the SQL migrations in `supabase/migrations/` in order in
 ## Data storage
 
 - In Supabase mode, each assessment action writes a new row to `assessment_events`, and the current session snapshot is stored in `assessment_sessions`.
-- If Supabase env vars are not set, the app falls back to `data/assessments-runtime.json` for local development.
+- If Supabase env vars are not set, the app falls back to a writable local runtime store. On local development that is `data/assessments-runtime.json`; on serverless hosts like Vercel it uses the platform temp directory and remains ephemeral.
 - The local file is ignored by Git so testing does not dirty the working tree.
 
 ## Notes

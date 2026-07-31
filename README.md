@@ -23,4 +23,4 @@ For Supabase syncing, use an `http://` or `https://` origin rather than `file://
 - The app is intentionally dependency-free so it can run directly from the workspace.
 - Results are computed instantly in the browser.
 - Completed assessments are inserted into the connected Supabase project in
-  `public."115-assessments"` using the project publishable key.
+  `public."115_assessments"` using the project publishable key.

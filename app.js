@@ -28,7 +28,7 @@
   const SUPABASE_URL = SUPABASE_CONFIG.url || "";
   const SUPABASE_PUBLISHABLE_KEY =
     SUPABASE_CONFIG.publishableKey || SUPABASE_CONFIG.anonKey || "";
-  const SUPABASE_TABLE = SUPABASE_CONFIG.table || "115-assessments";
+  const SUPABASE_TABLE = SUPABASE_CONFIG.table || "115_assessments";
   const SUPABASE_APP_VERSION = SUPABASE_CONFIG.appVersion || "2026-07-30";
 
   const pageMeta = [

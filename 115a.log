@@ -16,3 +16,13 @@ append all conversion with timestamp to 115a.log
 
 [2026-07-31T16:43:16+08:00] Assistant 45
 Will commit the current repo changes, redeploy the app on Vercel, and record this exchange in the log.
+
+[2026-07-31T17:58:44+08:00] User 50
+modify webapp change database table from 115-assessments to 115_assessments;
+git commit;
+deploy verecel;
+re-test;
+log all conversion;
+
+[2026-07-31T17:58:44+08:00] Assistant 46
+Updating the app and Supabase table to `115_assessments`, then I’ll retest, commit, deploy, and record the exchange.

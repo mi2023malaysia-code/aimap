@@ -67,5 +67,6 @@ Result: pass.
 - The final score and roadmap matched the expected regression reference exactly.
 - The retake button returned the app to a clean intro state, confirming state reset behavior.
 - No blocking UI or flow defects were encountered during the run.
-- After renaming the live Supabase table to `public."115-assessments"`, the same reference submission saved successfully again.
+- After renaming the live Supabase table to `public."115_assessments"`, the same reference submission saved successfully again.
+- A fresh retest after the underscore rename still passed with the same `70/100` Builder Track result and a successful Supabase sync.
 - Retested the renamed-table flow again and it still passed with the same `70/100` Builder Track result and successful Supabase sync.

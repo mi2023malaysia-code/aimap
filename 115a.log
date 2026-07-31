@@ -26,3 +26,6 @@ log all conversion;
 
 [2026-07-31T17:58:44+08:00] Assistant 46
 Updating the app and Supabase table to `115_assessments`, then I’ll retest, commit, deploy, and record the exchange.
+
+[2026-07-31T18:05:20+08:00] Assistant 47
+Completed the underscore table rename, committed the changes, deployed production, and verified the live flow still saves to Supabase and resets cleanly.

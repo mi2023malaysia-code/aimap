@@ -69,4 +69,5 @@ Result: pass.
 - No blocking UI or flow defects were encountered during the run.
 - After renaming the live Supabase table to `public."115_assessments"`, the same reference submission saved successfully again.
 - A fresh retest after the underscore rename still passed with the same `70/100` Builder Track result and a successful Supabase sync.
+- The production deployment at `https://115-delta.vercel.app` also passed the same reference submission and reset checks after the redeploy.
 - Retested the renamed-table flow again and it still passed with the same `70/100` Builder Track result and successful Supabase sync.

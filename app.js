@@ -61,10 +61,10 @@
       step: "Tools",
     },
     {
-      title: "Weekly Time",
-      subtitle: "Capture the weekly hours and budget that shape your path.",
+      title: "Monthly Time & Cost",
+      subtitle: "Capture the monthly hours and budget that shape your path.",
       copy:
-        "The time inputs shape the roadmap pace, and the budget inputs stay with the result for later review.",
+        "The monthly totals shape the roadmap pace, and the budget inputs stay with the result for later review.",
       step: "Time",
     },
     {
@@ -132,28 +132,33 @@
 
   const weeklyTimeFields = [
     {
-      name: "aiWorkHours",
-      label: "Total hours work on AI",
-      placeholder: "e.g. 4",
+      name: "aiHoursTotalMonthly",
+      label: "Total hours on AI (monthly)",
+      placeholder: "e.g. 24",
     },
     {
-      name: "aiLearnHours",
-      label: "Total hours learn on AI",
-      placeholder: "e.g. 2",
-    },
-    {
-      name: "aiCostTotal",
-      label: "Total cost on AI (total)",
+      name: "aiCostTotalMonthly",
+      label: "Total cost on AI (total-monthly)",
       placeholder: "e.g. 120",
     },
     {
+      name: "aiWorkHoursMonthly",
+      label: "Total hours work on AI (monthly)",
+      placeholder: "e.g. 16",
+    },
+    {
+      name: "aiLearnHoursMonthly",
+      label: "Total hours learn on AI (monthly)",
+      placeholder: "e.g. 8",
+    },
+    {
       name: "aiCostWorkMonthly",
-      label: "Total cost on AI (work - monthly)",
+      label: "Total cost work on AI (monthly)",
       placeholder: "e.g. 80",
     },
     {
       name: "aiCostLearnMonthly",
-      label: "Total cost on AI (learn - monthly)",
+      label: "Total cost learn on AI (monthly)",
       placeholder: "e.g. 40",
     },
   ];
@@ -217,8 +222,8 @@
       key: "timeCostCommitment",
       title: "Time & cost commitment",
       weight: 10,
-      prompt: "How much weekly time and budget can you realistically commit to learning and using AI?",
-      note: "1 means very limited time or budget. 5 means you can consistently invest both.",
+      prompt: "How much monthly time and budget can you realistically commit to learning and using AI?",
+      note: "1 means very limited monthly time or budget. 5 means you can consistently invest both.",
     },
   ];
 
@@ -297,6 +302,8 @@
     "3-6hrs": "accelerated pace, two to three sessions per week",
     "6+ hrs": "intensive pace, three or more sessions per week",
   };
+
+  const WEEKS_PER_MONTH = 4.345;
 
   const beginnerModules = [
     {
@@ -472,9 +479,10 @@
       paidToolName: "",
       tools: [],
       toolsOther: "",
-      aiWorkHours: "",
-      aiLearnHours: "",
-      aiCostTotal: "",
+      aiHoursTotalMonthly: "",
+      aiCostTotalMonthly: "",
+      aiWorkHoursMonthly: "",
+      aiLearnHoursMonthly: "",
       aiCostWorkMonthly: "",
       aiCostLearnMonthly: "",
       goal: "",
@@ -610,15 +618,29 @@
     return goalTracks[goal] || null;
   }
 
-  function getWeeklyHours(answers) {
-    const workHours = parseNumberValue(answers.aiWorkHours);
-    const learnHours = parseNumberValue(answers.aiLearnHours);
+  function getMonthlyHours(answers) {
+    const totalHours = parseNumberValue(answers.aiHoursTotalMonthly);
+    const workHours = parseNumberValue(answers.aiWorkHoursMonthly);
+    const learnHours = parseNumberValue(answers.aiLearnHoursMonthly);
+
+    if (totalHours != null) {
+      return totalHours;
+    }
 
     if (workHours == null && learnHours == null) {
       return null;
     }
 
     return (workHours || 0) + (learnHours || 0);
+  }
+
+  function getWeeklyHours(answers) {
+    const monthlyHours = getMonthlyHours(answers);
+    if (monthlyHours == null) {
+      return null;
+    }
+
+    return monthlyHours / WEEKS_PER_MONTH;
   }
 
   function getWeeklyTimeBand(hours) {
@@ -648,40 +670,55 @@
     return String(Number(rounded.toFixed(1))) + " hrs/week";
   }
 
+  function formatMonthlyHours(value) {
+    if (value == null || !Number.isFinite(value)) return "";
+    if (value === 0) return "0 hrs/month";
+    if (value < 1) return Math.round(value * 60) + " min/month";
+
+    const rounded = Math.round(value * 10) / 10;
+    if (rounded === 1) return "1 hr/month";
+    return String(Number(rounded.toFixed(1))) + " hrs/month";
+  }
+
   function getPacingLabel(hours) {
     const bucket = getWeeklyTimeBand(hours);
     return paceMap[bucket] || "steady pace";
   }
 
-  function summarizeWeeklyTime(answers) {
-    const workHours = parseNumberValue(answers.aiWorkHours);
-    const learnHours = parseNumberValue(answers.aiLearnHours);
-    const totalHours = getWeeklyHours(answers);
+  function summarizeMonthlyTime(answers) {
+    const totalHours = parseNumberValue(answers.aiHoursTotalMonthly);
+    const workHours = parseNumberValue(answers.aiWorkHoursMonthly);
+    const learnHours = parseNumberValue(answers.aiLearnHoursMonthly);
+    const weeklyHours = getWeeklyHours(answers);
     const parts = [];
 
+    if (totalHours != null) {
+      parts.push("total " + formatMonthlyHours(totalHours));
+    }
+
     if (workHours != null) {
-      parts.push(formatSimpleNumber(workHours) + " hrs work");
+      parts.push("work " + formatMonthlyHours(workHours));
     }
 
     if (learnHours != null) {
-      parts.push(formatSimpleNumber(learnHours) + " hrs learn");
+      parts.push("learn " + formatMonthlyHours(learnHours));
     }
 
-    if (totalHours != null) {
-      parts.push("total " + formatWeeklyHours(totalHours));
+    if (weeklyHours != null) {
+      parts.push("~" + formatWeeklyHours(weeklyHours));
     }
 
     return parts.join(", ");
   }
 
   function summarizeMonthlyCost(answers) {
-    const totalCost = parseNumberValue(answers.aiCostTotal);
+    const totalCost = parseNumberValue(answers.aiCostTotalMonthly);
     const workCost = parseNumberValue(answers.aiCostWorkMonthly);
     const learnCost = parseNumberValue(answers.aiCostLearnMonthly);
     const parts = [];
 
     if (totalCost != null) {
-      parts.push("total " + formatSimpleNumber(totalCost));
+      parts.push("total " + formatSimpleNumber(totalCost) + "/mo");
     }
 
     if (workCost != null) {
@@ -1073,15 +1110,19 @@
     const bandKey = getBand(levelSignal.level);
     const band = bandConfig[bandKey];
     const track = getTrack(answers.goal);
+    const monthlyHours = getMonthlyHours(answers);
     const weeklyHours = getWeeklyHours(answers);
     const durationWeeks =
       weeklyHours != null && bandKey ? getDurationWeeks(bandKey, weeklyHours) : null;
     const durationText = durationWeeks
-      ? durationWeeks + " weeks at " + formatWeeklyHours(weeklyHours)
-      : "Pending weekly commitment";
+      ? durationWeeks +
+        " weeks at " +
+        formatWeeklyHours(weeklyHours) +
+        (monthlyHours != null ? " (" + formatMonthlyHours(monthlyHours) + ")" : "")
+      : "Pending monthly commitment";
     const pacing = weeklyHours != null
       ? getPacingLabel(weeklyHours)
-      : "Choose weekly time to set the pace";
+      : "Choose monthly time to set the pace";
     const tools = normalizeTools(answers.tools, answers.toolsOther);
     const modules =
       track && durationWeeks
@@ -1104,6 +1145,7 @@
       durationText: durationText,
       pacing: pacing,
       tools: tools,
+      monthlyHours: monthlyHours,
       modules: modules,
       toolPlan: toolPlan,
     };
@@ -1380,7 +1422,7 @@
       '<article class="feature-card">' +
       '<p class="kicker">Context capture</p>' +
       "<h4>Record what you need</h4>" +
-      "<p>We capture your contact details, objective, pain points, tools, time, goal, weighted assessment, and training history.</p>" +
+      "<p>We capture your contact details, objective, pain points, tools, monthly time and cost, goal, weighted assessment, and training history.</p>" +
       "</article>" +
       '<article class="feature-card">' +
       '<p class="kicker">Instant roadmap</p>' +
@@ -1545,7 +1587,7 @@
   }
 
   function renderHoursPage(answers) {
-    const timeFields = weeklyTimeFields
+    const summaryFields = weeklyTimeFields
       .slice(0, 2)
       .map(function (field) {
         return renderNumberField(
@@ -1557,7 +1599,7 @@
       })
       .join("");
 
-    const costFields = weeklyTimeFields
+    const breakdownFields = weeklyTimeFields
       .slice(2)
       .map(function (field) {
         return renderNumberField(
@@ -1572,15 +1614,15 @@
     return renderQuestionCard(
       "hours",
       "05",
-      "How much time and budget can you commit?",
+      "How much monthly time and budget can you commit?",
       "These numbers set the pace and capture the cost side of your AI learning.",
-      '<p class="section-note">Enter numeric values only. Decimals are fine if you track partial hours or spend.</p>' +
+      '<p class="section-note">Enter numeric monthly values. Total hours and total cost go first, then the work and learning split.</p>' +
         '<div class="field-grid">' +
-        timeFields +
+        summaryFields +
         "</div>" +
-        '<p class="section-note">Now capture the budget side of your weekly AI use, using the same monthly basis.</p>' +
+        '<p class="section-note">Now break the monthly numbers into work and learning.</p>' +
         '<div class="field-grid">' +
-        costFields +
+        breakdownFields +
         "</div>"
     );
   }
@@ -1681,7 +1723,7 @@
     );
     const selectedTools = roadmap.tools;
     const paidTool = cleanText(answers.paidToolName, 80);
-    const weeklyTimeSummary = summarizeWeeklyTime(answers);
+    const monthlyTimeSummary = summarizeMonthlyTime(answers);
     const monthlyCostSummary = summarizeMonthlyCost(answers);
     const trainingSummary =
       answers.training === "yes"
@@ -1707,8 +1749,8 @@
         ".",
       "Weighted assessment: " + roadmap.levelSignal.fluencyScore + "/100.",
       "Assessment factors: " + factorSummary + ".",
-      "Weekly time: " + (weeklyTimeSummary || "Not provided") + ".",
-      "AI budget: " + (monthlyCostSummary || "Not provided") + ".",
+      "Monthly time: " + (monthlyTimeSummary || "Not provided") + ".",
+      "Monthly budget: " + (monthlyCostSummary || "Not provided") + ".",
       "AI fluency score: " + roadmap.levelSignal.fluencyScore + "/100.",
       "Formal training: " +
         trainingSummary +
@@ -1761,7 +1803,7 @@
             ". " +
             capitalizeSentence(roadmap.pacing) +
             "."
-          : "Based on your weekly commitment."
+          : "Based on your monthly commitment."
       ) +
       "</div>";
 
@@ -1937,7 +1979,7 @@
     const trackLine = track ? track.label : "Pending";
     const durationLine = roadmap.durationText;
     const paceLine = roadmap.pacing;
-    const weeklyTimeLine = summarizeWeeklyTime(state.answers) || "Pending";
+    const monthlyTimeLine = summarizeMonthlyTime(state.answers) || "Pending";
     const monthlyCostLine = summarizeMonthlyCost(state.answers) || "Pending";
     const currentTools = roadmap.tools.length
       ? roadmap.tools.join(", ")
@@ -1969,10 +2011,10 @@
       "<li>Duration: " +
       escapeHtml(durationLine) +
       ".</li>" +
-      "<li>Weekly AI time: " +
-      escapeHtml(weeklyTimeLine) +
+      "<li>Monthly AI time: " +
+      escapeHtml(monthlyTimeLine) +
       ".</li>" +
-      "<li>AI budget: " +
+      "<li>Monthly AI budget: " +
       escapeHtml(monthlyCostLine) +
       ".</li>" +
       "<li>Pacing: " +
@@ -2164,9 +2206,22 @@
       state.answers.tools = getCheckboxValues("tools");
       state.answers.toolsOther = cleanText(getFieldValue("toolsOther"), 80);
     } else if (state.currentPage === 4) {
-      state.answers.aiWorkHours = cleanText(getFieldValue("aiWorkHours"), 40);
-      state.answers.aiLearnHours = cleanText(getFieldValue("aiLearnHours"), 40);
-      state.answers.aiCostTotal = cleanText(getFieldValue("aiCostTotal"), 40);
+      state.answers.aiHoursTotalMonthly = cleanText(
+        getFieldValue("aiHoursTotalMonthly"),
+        40
+      );
+      state.answers.aiCostTotalMonthly = cleanText(
+        getFieldValue("aiCostTotalMonthly"),
+        40
+      );
+      state.answers.aiWorkHoursMonthly = cleanText(
+        getFieldValue("aiWorkHoursMonthly"),
+        40
+      );
+      state.answers.aiLearnHoursMonthly = cleanText(
+        getFieldValue("aiLearnHoursMonthly"),
+        40
+      );
       state.answers.aiCostWorkMonthly = cleanText(
         getFieldValue("aiCostWorkMonthly"),
         40
@@ -2265,7 +2320,7 @@
           : state.currentPage === 3
           ? "Select at least one tool, or choose None if you are just starting out."
           : state.currentPage === 4
-          ? "Enter the weekly hours and cost numbers before continuing."
+          ? "Enter the monthly hours and cost numbers before continuing."
           : state.currentPage === 5
           ? "Select the primary goal for this assessment."
           : state.currentPage === 6

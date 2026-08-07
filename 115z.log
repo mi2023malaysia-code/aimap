@@ -14,3 +14,25 @@ append all previous conversion into 115z.log
 
 [2026-08-07T11:22:34+08:00] Assistant 48
 Updated the Weekly Time section with five numeric inputs, wired the new values into pacing and result summaries, verified the flow in the browser, and prepared the branch for commit and push.
+
+[2026-08-07T12:28:59+08:00] User 52
+live now
+live now at vercel
+
+modify <Assessment
+Weekly Time> section:
+
+total hours on AI (monthly):   textbox numeric entry
+total cost on A (total- monthly) I: textbox numeric entry
+
+total hours work on AI (monthly): textbox numeric entry
+total hours learn on AI (monthly): textbox numeric entry
+total cost work on AI (monthly): textbox numeric entry
+total cost learn on AI (monthly): textbox numeric entry
+
+append all previous conversion into 115z.log
+
+deploy at vercel
+
+[2026-08-07T12:28:59+08:00] Assistant 49
+Updated the Weekly Time section to monthly numeric inputs for total hours, work hours, learn hours, and total/work/learn costs, then wired the values into the assessment flow and prepared the branch for commit, push, and Vercel deployment.

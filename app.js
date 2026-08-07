@@ -278,11 +278,11 @@
   ].concat(goalOptions);
 
   const assessmentScaleOptions = [
-    { value: "1", label: "1 - Not yet" },
-    { value: "2", label: "2 - Early" },
-    { value: "3", label: "3 - Functional" },
-    { value: "4", label: "4 - Strong" },
-    { value: "5", label: "5 - Highly mature" },
+    { value: "1", label: "Not Yet" },
+    { value: "2", label: "Early" },
+    { value: "3", label: "Functional" },
+    { value: "4", label: "Strong" },
+    { value: "5", label: "Highly mature" },
   ];
 
   const assessmentQuestions = [
@@ -583,18 +583,18 @@
       goalSecondary: "None",
       goalThird: "None",
       goalOtherSector: "",
-      toolBreadth: "",
-      promptQuality: "",
-      verificationJudgment: "",
-      automationBuilding: "",
-      timeCostCommitment: "",
+      toolBreadth: "1",
+      promptQuality: "1",
+      verificationJudgment: "1",
+      automationBuilding: "1",
+      timeCostCommitment: "1",
       training: "",
       trainingCourse: "",
     };
 
     toolUsageSections.forEach(function (section) {
       section.items.forEach(function (item) {
-        answers[item.name] = "0";
+        answers[item.name] = "not-yet-try";
       });
     });
 
@@ -1876,16 +1876,14 @@
       .map(function (section, index) {
         const fields = section.items
           .map(function (item) {
-        return renderSelectField(
-          item.name,
-          item.label,
-          answers[item.name],
-          toolUsageOptions,
-          null,
-          { value: "0", label: "0" }
-        );
-      })
-      .join("");
+            return renderSelectField(
+              item.name,
+              item.label,
+              answers[item.name] || "not-yet-try",
+              toolUsageOptions
+            );
+          })
+          .join("");
 
         return renderQuestionCard(
           section.key,
@@ -2028,10 +2026,9 @@
   function renderAssessmentPage(answers) {
     return (
       '<div class="page-stack">' +
-      '<p class="section-note">Rate each factor on the same 1-5 scale: Not yet, Early, Functional, Strong, and Highly mature.</p>' +
+      '<p class="section-note">Rate each factor on the same 1-5 scale: Not Yet, Early, Functional, Strong, and Highly mature.</p>' +
       assessmentQuestions
         .map(function (factor, index) {
-          const selectedValue = answers[factor.key] ? [answers[factor.key]] : [];
           return renderQuestionCard(
             "assessment-" + factor.key,
             "07" + String.fromCharCode(65 + index),
@@ -2042,12 +2039,12 @@
               " " +
               escapeHtml(factor.note) +
               "</p>" +
-              '<div class="choice-row">' +
-              renderOptionGroup(
+              '<div class="field-grid">' +
+              renderSelectField(
                 factor.key,
-                assessmentScaleOptions,
-                selectedValue,
-                "radio"
+                "Rating",
+                answers[factor.key] || "1",
+                assessmentScaleOptions
               ) +
               "</div>"
           );
@@ -2107,7 +2104,7 @@
       "Not provided"
     );
     const selectedTools = roadmap.tools;
-    const toolUsageSummary = getToolUsageSummary(answers, 4) || "0 / not yet try";
+    const toolUsageSummary = getToolUsageSummary(answers, 4) || "not yet try";
     const monthlyTimeSummary = summarizeMonthlyTime(answers);
     const monthlyCostSummary = summarizeMonthlyCost(answers);
     const trainingSummary =
@@ -2371,7 +2368,7 @@
     const currentTools = roadmap.tools.length
       ? roadmap.tools.join(", ")
       : "No active tools selected yet";
-    const toolUsageLine = getToolUsageSummary(state.answers, 3) || "0 / not yet try";
+    const toolUsageLine = getToolUsageSummary(state.answers, 3) || "not yet try";
     const liveLine = state.locked ? scoreLine : "Assessment in progress";
 
     const previewCard =

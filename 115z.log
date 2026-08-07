@@ -66,3 +66,21 @@ append conversion
 
 [2026-08-07T15:10:24+08:00] Assistant 51
 Appended the latest conversation request to 115z.log while preserving the existing transcript format.
+[2026-08-07T18:58:57+08:00] User 55
+modify Which tools you used' page:
+set defaukt to 'not yet try'
+
+=========
+
+modify 'Rate each factor on the same 1-5 scale: Not yet, Early, Functional, Strong, and Highly mature."
+
+set defaukt to Not Yet
+
+change choice become dropdown
+
+appeend conversion;
+
+deploy vercel;
+
+[2026-08-07T18:58:57+08:00] Assistant 52
+Updated the tool-usage page to default to "not yet try" and converted the assessment factors to dropdowns with "Not Yet" selected by default, then prepared the branch for commit, push, and Vercel deployment.

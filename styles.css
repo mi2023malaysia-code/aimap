@@ -364,6 +364,14 @@ body:not([data-page-state="intro"]) .hero-cta {
   align-items: start;
 }
 
+body[data-page-state="wizard"] .layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body[data-page-state="wizard"] .side {
+  display: none;
+}
+
 .survey-card,
 .result-card {
   padding: 26px;

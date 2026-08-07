@@ -36,3 +36,27 @@ deploy at vercel
 
 [2026-08-07T12:28:59+08:00] Assistant 49
 Updated the Weekly Time section to monthly numeric inputs for total hours, work hours, learn hours, and total/work/learn costs, then wired the values into the assessment flow and prepared the branch for commit, push, and Vercel deployment.
+
+[2026-08-07T13:24:10+08:00] User 53
+modify page 2/9 to 7/9:
+remove Roadmap
+
+Live preview section;
+remove Assessment
+
+Weekly Time section;
+remove Workflow Integration
+Score is taking shape full section;
+
+modify page 5/9<Assessment
+Weekly Time> section:
+total hours on AI (monthly):   textbox numeric entry;
+total cost on A (total- monthly) I: textbox numeric entry;
+total hours work on AI (monthly): textbox numeric entry;
+total hours learn on AI (monthly): textbox numeric entry;
+total cost work on AI (monthly): textbox numeric entry;
+total cost learn on AI (monthly): textbox numeric entry;
+append all previous conversion into 115z.log;
+
+[2026-08-07T13:24:10+08:00] Assistant 50
+Removed the wizard-side Roadmap/Live preview panel from pages 2/9 through 7/9, dropped the Workflow Integration assessment factor and the old score copy, reweighted the remaining assessment factors, and kept the page 5/9 monthly time and cost inputs as numeric fields.

@@ -1,7 +1,7 @@
 (function () {
   const TOTAL_PAGES = 9;
   const RESULT_PAGE_INDEX = 8;
-  const TOTAL_COMPLETION_SECTIONS = 14;
+  const TOTAL_COMPLETION_SECTIONS = 13;
 
   const form = document.getElementById("wizard-form");
   const pageContent = document.getElementById("page-content");
@@ -76,7 +76,7 @@
     },
     {
       title: "Weighted Assessment",
-      subtitle: "Rate the six factors that make up your AI fluency score.",
+      subtitle: "Rate the five factors that make up your AI fluency score.",
       copy:
         "Each factor uses a 1-5 scale and a different weight in the final score.",
       step: "Assessment",
@@ -186,35 +186,28 @@
     {
       key: "toolBreadth",
       title: "Tool breadth",
-      weight: 25,
+      weight: 30,
       prompt: "How broad is your current AI tool use across tasks and contexts?",
       note: "1 means one narrow tool setup. 5 means a broad stack used across many tasks.",
     },
     {
       key: "promptQuality",
       title: "Prompt quality and task framing",
-      weight: 25,
+      weight: 30,
       prompt: "How well do you structure prompts, context, and task framing before asking for output?",
       note: "1 means vague asks. 5 means consistently clear, specific, and reusable prompts.",
     },
     {
       key: "verificationJudgment",
       title: "Verification and judgment",
-      weight: 10,
+      weight: 15,
       prompt: "How consistently do you check outputs, judge quality, and catch errors?",
       note: "1 means you rarely verify. 5 means you regularly validate and critique the output.",
     },
     {
-      key: "workflowIntegration",
-      title: "Workflow integration",
-      weight: 20,
-      prompt: "How well does AI fit into your day-to-day workflow instead of sitting on the side?",
-      note: "1 means occasional use only. 5 means AI is embedded in your normal process.",
-    },
-    {
       key: "automationBuilding",
       title: "Automation / building ability",
-      weight: 10,
+      weight: 15,
       prompt: "How much do you automate, connect tools, or build repeatable AI workflows?",
       note: "1 means no automation yet. 5 means you regularly build or automate with AI.",
     },
@@ -266,8 +259,8 @@
       description: "Prompting, tool basics, and one repeatable use case.",
     },
     intermediate: {
-      label: "Workflow Integration",
-      description: "Prompt patterns, workflow integration, and light automation.",
+      label: "Applied Practice",
+      description: "Prompt patterns, process habits, and light automation.",
     },
     advanced: {
       label: "Advanced Systems",
@@ -489,7 +482,6 @@
       toolBreadth: "",
       promptQuality: "",
       verificationJudgment: "",
-      workflowIntegration: "",
       automationBuilding: "",
       timeCostCommitment: "",
       training: "",
@@ -783,7 +775,6 @@
     const toolBreadth = getAssessmentRating(answers, "toolBreadth");
     const promptQuality = getAssessmentRating(answers, "promptQuality");
     const verificationJudgment = getAssessmentRating(answers, "verificationJudgment");
-    const workflowIntegration = getAssessmentRating(answers, "workflowIntegration");
     const automationBuilding = getAssessmentRating(answers, "automationBuilding");
     const timeCostCommitment = getAssessmentRating(answers, "timeCostCommitment");
 
@@ -797,13 +788,17 @@
         score: scoreAssessmentRating(rating, factor.weight),
       };
     });
+    const totalWeight = factorScores.reduce(function (sum, factor) {
+      return sum + factor.weight;
+    }, 0);
+    const weightedScore = factorScores.reduce(function (sum, factor) {
+      return sum + factor.score;
+    }, 0);
+    const normalizedScore =
+      totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 100) : 0;
 
     const fluencyScore = clamp(
-      Math.round(
-        factorScores.reduce(function (sum, factor) {
-          return sum + factor.score;
-        }, 0)
-      ),
+      normalizedScore,
       1,
       100
     );
@@ -815,7 +810,6 @@
       toolBreadth: toolBreadth,
       promptQuality: promptQuality,
       verificationJudgment: verificationJudgment,
-      workflowIntegration: workflowIntegration,
       automationBuilding: automationBuilding,
       timeCostCommitment: timeCostCommitment,
       factorScores: factorScores,
@@ -857,14 +851,7 @@
       toolsComplete,
       hoursComplete,
       goalComplete,
-      assessmentComplete[0],
-      assessmentComplete[1],
-      assessmentComplete[2],
-      assessmentComplete[3],
-      assessmentComplete[4],
-      assessmentComplete[5],
-      trainingComplete,
-    ];
+    ].concat(assessmentComplete, [trainingComplete]);
   }
 
   function getCompletion(answers) {
@@ -2145,7 +2132,7 @@
       return "Early pattern forming.";
     }
     if (completedSections < TOTAL_COMPLETION_SECTIONS) {
-      return "Score is taking shape.";
+      return "Progress is building.";
     }
     return "Strong live reading.";
   }
@@ -2236,7 +2223,6 @@
       state.answers.toolBreadth = getRadioValue("toolBreadth");
       state.answers.promptQuality = getRadioValue("promptQuality");
       state.answers.verificationJudgment = getRadioValue("verificationJudgment");
-      state.answers.workflowIntegration = getRadioValue("workflowIntegration");
       state.answers.automationBuilding = getRadioValue("automationBuilding");
       state.answers.timeCostCommitment = getRadioValue("timeCostCommitment");
     } else if (state.currentPage === 7) {
@@ -2324,7 +2310,7 @@
           : state.currentPage === 5
           ? "Select the primary goal for this assessment."
           : state.currentPage === 6
-          ? "Rate the six factors that shape your AI fluency score."
+          ? "Rate the five factors that shape your AI fluency score."
           : state.currentPage === 7
           ? "Confirm whether you have completed formal paid training and share the course name if you have."
           : "Complete the highlighted fields before continuing.";

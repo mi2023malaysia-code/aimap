@@ -2629,11 +2629,11 @@
       state.answers.goalThird = getFieldValue("goalThird") || "None";
       state.answers.goalOtherSector = cleanText(getFieldValue("goalOtherSector"), 120);
     } else if (state.currentPage === 6) {
-      state.answers.toolBreadth = getRadioValue("toolBreadth");
-      state.answers.promptQuality = getRadioValue("promptQuality");
-      state.answers.verificationJudgment = getRadioValue("verificationJudgment");
-      state.answers.automationBuilding = getRadioValue("automationBuilding");
-      state.answers.timeCostCommitment = getRadioValue("timeCostCommitment");
+      state.answers.toolBreadth = getFieldValue("toolBreadth") || "1";
+      state.answers.promptQuality = getFieldValue("promptQuality") || "1";
+      state.answers.verificationJudgment = getFieldValue("verificationJudgment") || "1";
+      state.answers.automationBuilding = getFieldValue("automationBuilding") || "1";
+      state.answers.timeCostCommitment = getFieldValue("timeCostCommitment") || "1";
     } else if (state.currentPage === 7) {
       state.answers.training = getRadioValue("training");
       state.answers.trainingCourse = cleanText(getFieldValue("trainingCourse"), 80);

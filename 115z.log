@@ -84,3 +84,9 @@ deploy vercel;
 
 [2026-08-07T18:58:57+08:00] Assistant 52
 Updated the tool-usage page to default to "not yet try" and converted the assessment factors to dropdowns with "Not Yet" selected by default, then prepared the branch for commit, push, and Vercel deployment.
+[2026-08-07T19:17:25+08:00] User 56
+debug 'Rate the five factors that shape your AI fluency score' page:
+
+does not pass the validation of choice
+[2026-08-07T19:17:25+08:00] Assistant 53
+Fixed the assessment page sync so the dropdown selections are read with getFieldValue instead of radio input lookup, which restores validation for the five factor choices.

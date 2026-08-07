@@ -69,9 +69,9 @@
     },
     {
       title: "Primary Goal",
-      subtitle: "Choose the track that best matches your intent.",
+      subtitle: "Choose the track and supporting goals that best match your intent.",
       copy:
-        "The selected goal drives the learning track name and the examples used in the result.",
+        "The primary goal drives the learning track name, while the secondary and third goals add extra context for the result.",
       step: "Goal",
     },
     {
@@ -114,6 +114,22 @@
     "I need better prompts and workflows",
     "I need more confidence in output quality",
   ];
+
+  const objectiveDropdownOptions = [
+    { value: "None", label: "None" },
+  ].concat(
+    wantsOptions.map(function (item) {
+      return { value: item, label: item };
+    })
+  );
+
+  const painDropdownOptions = [
+    { value: "None", label: "None" },
+  ].concat(
+    painOptions.map(function (item) {
+      return { value: item, label: item };
+    })
+  );
 
   const toolUsageOptions = [
     { value: "not-yet-try", label: "A) not yet try" },
@@ -195,6 +211,7 @@
 
   const toolUsageValueOrder = {
     "": 0,
+    "0": 0,
     "not-yet-try": 0,
     "just-trying-only": 1,
     "basic-free": 2,
@@ -255,6 +272,10 @@
     { value: "Academic/research", label: "Academic or research" },
     { value: "General curiosity", label: "General curiosity" },
   ];
+
+  const goalDropdownOptions = [
+    { value: "None", label: "None" },
+  ].concat(goalOptions);
 
   const assessmentScaleOptions = [
     { value: "1", label: "1 - Not yet" },
@@ -546,19 +567,22 @@
       name: "",
       email: "",
       roleBackground: "",
-      wants: [],
+      wants: ["None", "None", "None"],
       wantsOther: "",
-      pain: [],
+      pain: ["None", "None", "None"],
       painOther: "",
       tools: [],
       toolsOther: "",
-      aiHoursTotalMonthly: "",
-      aiCostTotalMonthly: "",
-      aiWorkHoursMonthly: "",
-      aiLearnHoursMonthly: "",
-      aiCostWorkMonthly: "",
-      aiCostLearnMonthly: "",
-      goal: "",
+      aiHoursTotalMonthly: "0",
+      aiCostTotalMonthly: "0",
+      aiWorkHoursMonthly: "0",
+      aiLearnHoursMonthly: "0",
+      aiCostWorkMonthly: "0",
+      aiCostLearnMonthly: "0",
+      goal: "None",
+      goalSecondary: "None",
+      goalThird: "None",
+      goalOtherSector: "",
       toolBreadth: "",
       promptQuality: "",
       verificationJudgment: "",
@@ -570,7 +594,7 @@
 
     toolUsageSections.forEach(function (section) {
       section.items.forEach(function (item) {
-        answers[item.name] = "";
+        answers[item.name] = "0";
       });
     });
 
@@ -638,6 +662,17 @@
 
   function isValidEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanText(value));
+  }
+
+  function isMeaningfulSelection(value) {
+    const text = cleanText(value, 120);
+    return Boolean(text) && text !== "None";
+  }
+
+  function hasMeaningfulSelection(values) {
+    return Array.isArray(values) && values.some(function (value) {
+      return isMeaningfulSelection(value);
+    });
   }
 
   function getRadioValue(name) {
@@ -839,10 +874,12 @@
   }
 
   function summarizeSelections(selected, otherText, fallback) {
-    const values = selected.slice();
+    const values = Array.isArray(selected) ? selected.slice() : [];
     const other = cleanText(otherText, 120);
     if (other) values.push(other);
-    const joined = values.filter(Boolean).join(", ");
+    const joined = values.filter(function (value) {
+      return isMeaningfulSelection(value);
+    }).join(", ");
     return joined || fallback;
   }
 
@@ -912,8 +949,9 @@
       isValidEmail(answers.email) &&
       isFilled(answers.roleBackground);
     const wantsComplete =
-      answers.wants.length > 0 || isFilled(answers.wantsOther);
-    const painComplete = answers.pain.length > 0 || isFilled(answers.painOther);
+      isMeaningfulSelection(answers.wants[0]) || isFilled(answers.wantsOther);
+    const painComplete =
+      isMeaningfulSelection(answers.pain[0]) || isFilled(answers.painOther);
     const toolUsageComplete = toolUsageSections.every(function (section) {
       return section.items.every(function (item) {
         return isFilled(answers[item.name]);
@@ -925,7 +963,8 @@
     const hoursComplete = weeklyTimeFields.every(function (field) {
       return isFilled(answers[field.name]);
     });
-    const goalComplete = isFilled(answers.goal);
+    const goalComplete =
+      isMeaningfulSelection(answers.goal) || isFilled(answers.goalOtherSector);
     const assessmentComplete = assessmentQuestions.map(function (factor) {
       return isFilled(answers[factor.key]);
     });
@@ -974,13 +1013,19 @@
         missing.push("profile");
         focusSelectors.push('[name="roleBackground"]');
       }
-      if (!answers.wants.length && !isFilled(answers.wantsOther)) {
+      if (
+        !isMeaningfulSelection(answers.wants[0]) &&
+        !isFilled(answers.wantsOther)
+      ) {
         missing.push("objective");
-        focusSelectors.push('[name="wantsOther"]');
+        focusSelectors.push('[name="wantsPrimary"]');
       }
-      if (!answers.pain.length && !isFilled(answers.painOther)) {
+      if (
+        !isMeaningfulSelection(answers.pain[0]) &&
+        !isFilled(answers.painOther)
+      ) {
         missing.push("pain");
-        focusSelectors.push('[name="painOther"]');
+        focusSelectors.push('[name="painPrimary"]');
       }
     }
 
@@ -1022,7 +1067,7 @@
     }
 
     if (pageIndex === 5) {
-      if (!isFilled(answers.goal)) {
+      if (!isMeaningfulSelection(answers.goal) && !isFilled(answers.goalOtherSector)) {
         missing.push("goal");
         focusSelectors.push('[name="goal"]');
       }
@@ -1440,6 +1485,10 @@
   }
 
   function getToolUsageValueLabel(value) {
+    if (value === "0") {
+      return "not yet try";
+    }
+
     const option = toolUsageOptions.find(function (item) {
       return item.value === value;
     });
@@ -1454,7 +1503,7 @@
   function getToolUsageSummary(answers, limit) {
     const maxItems = typeof limit === "number" ? limit : 4;
     const entries = getToolUsageEntries(answers).filter(function (entry) {
-      return entry.value && entry.value !== "not-yet-try";
+      return entry.value && entry.value !== "0" && entry.value !== "not-yet-try";
     });
 
     if (!entries.length) {
@@ -1576,12 +1625,28 @@
     );
   }
 
-  function renderSelectField(name, label, value, options, placeholder) {
-    const optionMarkup = [
-      '<option value="">' + escapeHtml(placeholder || "Select one option") + "</option>",
-    ]
-      .concat(
-        options.map(function (option) {
+  function renderSelectField(name, label, value, options, placeholder, defaultOption) {
+    const optionMarkup = [];
+
+    if (defaultOption) {
+      optionMarkup.push(
+        '<option value="' +
+          escapeAttr(defaultOption.value) +
+          '"' +
+          (value === defaultOption.value ? " selected" : "") +
+          ">" +
+          escapeHtml(defaultOption.label) +
+          "</option>"
+      );
+    } else if (placeholder) {
+      optionMarkup.push(
+        '<option value="">' + escapeHtml(placeholder) + "</option>"
+      );
+    }
+
+    optionMarkup.push(
+      options
+        .map(function (option) {
           const selected = value === option.value ? " selected" : "";
           return (
             '<option value="' +
@@ -1593,8 +1658,8 @@
             "</option>"
           );
         })
-      )
-      .join("");
+        .join("")
+    );
 
     return (
       '<label class="select-field">' +
@@ -1704,15 +1769,25 @@
       '<p class="form-note">This contact and background information is used to personalize the result and prepare the email copy action.</p>';
 
     const objectiveCard =
-      '<p class="section-note">Choose any outcomes that matter. You can add a free-text note below if the options do not fully capture your objective.</p>' +
-      '<div class="chip-grid">' +
-      renderOptionGroup(
-        "wants",
-        wantsOptions.map(function (item) {
-          return { value: item, label: item };
-        }),
-        answers.wants,
-        "checkbox"
+      '<p class="section-note">Pick a primary objective first, then optional secondary and third objectives. Leave any unused slot on None.</p>' +
+      '<div class="field-grid">' +
+      renderSelectField(
+        "wantsPrimary",
+        "Primary Objective",
+        answers.wants[0],
+        objectiveDropdownOptions
+      ) +
+      renderSelectField(
+        "wantsSecondary",
+        "Secondary Objective",
+        answers.wants[1],
+        objectiveDropdownOptions
+      ) +
+      renderSelectField(
+        "wantsThird",
+        "Third Objective",
+        answers.wants[2],
+        objectiveDropdownOptions
       ) +
       "</div>" +
       renderTextareaField(
@@ -1723,15 +1798,25 @@
       );
 
     const painCard =
-      '<p class="section-note">Select the friction points that most accurately reflect your learning experience, then add any other notes below.</p>' +
-      '<div class="chip-grid">' +
-      renderOptionGroup(
-        "pain",
-        painOptions.map(function (item) {
-          return { value: item, label: item };
-        }),
-        answers.pain,
-        "checkbox"
+      '<p class="section-note">Pick a primary pain point first, then optional secondary and third pain points. Leave any unused slot on None.</p>' +
+      '<div class="field-grid">' +
+      renderSelectField(
+        "painPrimary",
+        "Primary Pain Point",
+        answers.pain[0],
+        painDropdownOptions
+      ) +
+      renderSelectField(
+        "painSecondary",
+        "Secondary Pain Point",
+        answers.pain[1],
+        painDropdownOptions
+      ) +
+      renderSelectField(
+        "painThird",
+        "Third Pain Point",
+        answers.pain[2],
+        painDropdownOptions
       ) +
       "</div>" +
       renderTextareaField(
@@ -1754,14 +1839,14 @@
         "objective",
         "02B",
         "What do you want this assessment to deliver?",
-        "Select all that apply, then add any additional objective below.",
+        "Select your primary, secondary, and third objective, then add any additional objective below.",
         objectiveCard
       ) +
       renderQuestionCard(
         "pain",
         "02C",
         "What is currently slowing your AI learning?",
-        "Select the pain points that apply and add any notes in the free-text field.",
+        "Select your primary, secondary, and third pain points and add any notes in the free-text field.",
         painCard
       ) +
       "</div>"
@@ -1791,15 +1876,16 @@
       .map(function (section, index) {
         const fields = section.items
           .map(function (item) {
-            return renderSelectField(
-              item.name,
-              item.label,
-              answers[item.name],
-              toolUsageOptions,
-              "Choose one option"
-            );
-          })
-          .join("");
+        return renderSelectField(
+          item.name,
+          item.label,
+          answers[item.name],
+          toolUsageOptions,
+          null,
+          { value: "0", label: "0" }
+        );
+      })
+      .join("");
 
         return renderQuestionCard(
           section.key,
@@ -1901,20 +1987,41 @@
   }
 
   function renderGoalPage(answers) {
+    const goalCard =
+      '<p class="section-note">Pick a primary goal first, then optional secondary and third goals. Leave any unused slot on None.</p>' +
+      '<div class="field-grid">' +
+      renderSelectField(
+        "goal",
+        "Primary Goal",
+        answers.goal,
+        goalDropdownOptions
+      ) +
+      renderSelectField(
+        "goalSecondary",
+        "Secondary Goal",
+        answers.goalSecondary,
+        goalDropdownOptions
+      ) +
+      renderSelectField(
+        "goalThird",
+        "Third Goal",
+        answers.goalThird,
+        goalDropdownOptions
+      ) +
+      "</div>" +
+      renderTextField(
+        "goalOtherSector",
+        "Other Sector",
+        answers.goalOtherSector,
+        "Describe another sector or context"
+      );
+
     return renderQuestionCard(
       "goal",
       "06",
       "What is your main goal for learning AI?",
-      "This determines the track name and the examples used in the roadmap.",
-      '<p class="section-note">Choose the objective that most closely matches why you are here today.</p>' +
-        '<div class="choice-row">' +
-        renderOptionGroup(
-          "goal",
-          goalOptions,
-          answers.goal ? [answers.goal] : [],
-          "radio"
-        ) +
-        "</div>"
+      "Choose a primary goal first, then optional secondary and third goals. The primary goal drives the track name and examples in the roadmap.",
+      goalCard
     );
   }
 
@@ -1994,8 +2101,13 @@
       answers.painOther,
       "Not provided"
     );
+    const goalSummary = summarizeSelections(
+      [answers.goal, answers.goalSecondary, answers.goalThird],
+      answers.goalOtherSector,
+      "Not provided"
+    );
     const selectedTools = roadmap.tools;
-    const toolUsageSummary = getToolUsageSummary(answers, 4) || "Not provided";
+    const toolUsageSummary = getToolUsageSummary(answers, 4) || "0 / not yet try";
     const monthlyTimeSummary = summarizeMonthlyTime(answers);
     const monthlyCostSummary = summarizeMonthlyCost(answers);
     const trainingSummary =
@@ -2032,6 +2144,7 @@
       "Weekly pace: " + roadmap.pacing + ".",
       "What you want: " + wantsSummary + ".",
       "Pain points: " + painSummary + ".",
+      "Goal focus: " + goalSummary + ".",
     ];
 
     const toolPlanItems = roadmap.toolPlan;
@@ -2258,7 +2371,7 @@
     const currentTools = roadmap.tools.length
       ? roadmap.tools.join(", ")
       : "No active tools selected yet";
-    const toolUsageLine = getToolUsageSummary(state.answers, 3) || "Not provided";
+    const toolUsageLine = getToolUsageSummary(state.answers, 3) || "0 / not yet try";
     const liveLine = state.locked ? scoreLine : "Assessment in progress";
 
     const previewCard =
@@ -2306,7 +2419,11 @@
       ".</li>" +
       "<li>Tools in use: " + escapeHtml(currentTools) + ".</li>" +
       "<li>Goal: " +
-      escapeHtml(state.answers.goal || "Pending") +
+      escapeHtml(
+        isMeaningfulSelection(state.answers.goal)
+          ? state.answers.goal
+          : "Pending"
+      ) +
       ".</li>" +
       "</ul>" +
       "</section>";
@@ -2463,9 +2580,17 @@
       state.answers.name = cleanText(getFieldValue("name"), 80);
       state.answers.email = cleanText(getFieldValue("email"), 120);
       state.answers.roleBackground = cleanText(getFieldValue("roleBackground"), 120);
-      state.answers.wants = getCheckboxValues("wants");
+      state.answers.wants = [
+        getFieldValue("wantsPrimary") || "None",
+        getFieldValue("wantsSecondary") || "None",
+        getFieldValue("wantsThird") || "None",
+      ];
       state.answers.wantsOther = cleanText(getFieldValue("wantsOther"), 160);
-      state.answers.pain = getCheckboxValues("pain");
+      state.answers.pain = [
+        getFieldValue("painPrimary") || "None",
+        getFieldValue("painSecondary") || "None",
+        getFieldValue("painThird") || "None",
+      ];
       state.answers.painOther = cleanText(getFieldValue("painOther"), 160);
     } else if (state.currentPage === 2) {
       toolUsageSections.forEach(function (section) {
@@ -2502,7 +2627,10 @@
         40
       );
     } else if (state.currentPage === 5) {
-      state.answers.goal = getRadioValue("goal");
+      state.answers.goal = getFieldValue("goal") || "None";
+      state.answers.goalSecondary = getFieldValue("goalSecondary") || "None";
+      state.answers.goalThird = getFieldValue("goalThird") || "None";
+      state.answers.goalOtherSector = cleanText(getFieldValue("goalOtherSector"), 120);
     } else if (state.currentPage === 6) {
       state.answers.toolBreadth = getRadioValue("toolBreadth");
       state.answers.promptQuality = getRadioValue("promptQuality");

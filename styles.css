@@ -532,6 +532,7 @@ body:not([data-page-state="intro"]) .hero-cta {
 }
 
 input[type="text"],
+input[type="number"],
 select {
   width: 100%;
   min-height: 48px;
@@ -552,10 +553,21 @@ input[type="text"]::placeholder {
 }
 
 input[type="text"]:focus,
+input[type="number"]:focus,
 select:focus,
 button:focus-visible {
   box-shadow: var(--focus);
   border-color: rgba(139, 94, 52, 0.45);
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .actions {
@@ -1000,6 +1012,7 @@ button:focus-visible {
 }
 
 input[type="email"],
+input[type="number"],
 textarea {
   width: 100%;
   min-height: 48px;
@@ -1021,11 +1034,13 @@ textarea {
 }
 
 input[type="email"]::placeholder,
+input[type="number"]::placeholder,
 textarea::placeholder {
   color: rgba(111, 92, 77, 0.7);
 }
 
 input[type="email"]:focus,
+input[type="number"]:focus,
 textarea:focus {
   box-shadow: var(--focus);
   border-color: rgba(139, 94, 52, 0.45);

@@ -1,0 +1,16 @@
+[2026-08-07T11:22:34+08:00] User 51
+commit ne branch add_question to github [mi2023malaysia-code/aimap](https://github.com/mi2023malaysia-code/aimap)
+
+modify <Assessment Weekly Time> section:
+
+total hours work on AI: textbox numeric entry
+total hours learn on AI: textbox numeric entry
+
+total cost on A (total) I: textbox numeric entry
+total cost on AI (work - monthly): textbox numeric entry
+total cost on AI (learn- monthly): textbox numeric entry
+
+append all previous conversion into 115z.log
+
+[2026-08-07T11:22:34+08:00] Assistant 48
+Updated the Weekly Time section with five numeric inputs, wired the new values into pacing and result summaries, verified the flow in the browser, and prepared the branch for commit and push.

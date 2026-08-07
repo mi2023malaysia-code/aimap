@@ -47,11 +47,11 @@
       step: "Profile",
     },
     {
-      title: "Paid AI Tool",
-      subtitle: "Understand whether a paid platform already anchors your workflow.",
+      title: "Which tools you used",
+      subtitle: "Rate the tools you have touched with one option each.",
       copy:
-        "Move through one page at a time. You can go back and adjust answers until the final submit is complete.",
-      step: "Paid",
+        "Choose one usage level for every tool. The roadmap will use the strongest signals from your stack.",
+      step: "Usage",
     },
     {
       title: "Current Tools",
@@ -115,10 +115,92 @@
     "I need more confidence in output quality",
   ];
 
-  const paidToolOptions = [
-    { value: "yes", label: "Yes" },
-    { value: "no", label: "No" },
+  const toolUsageOptions = [
+    { value: "not-yet-try", label: "A) not yet try" },
+    { value: "just-trying-only", label: "B) just trying only" },
+    { value: "basic-free", label: "C) use basic/free version" },
+    { value: "paid-version", label: "D) use paid version" },
+    { value: "advance-features", label: "E) use advance features" },
   ];
+
+  const toolUsageSections = [
+    {
+      key: "tool-usage-a",
+      title: "A. Core assistants",
+      note: "Rate each general-purpose assistant with one option.",
+      items: [
+        { name: "toolA1", label: "A1 - Chatgpt" },
+        { name: "toolA2", label: "A2 -Gemini / google AI studio" },
+        { name: "toolA3", label: "A3 - Claude" },
+        { name: "toolA4", label: "A4 - Copilot" },
+        { name: "toolA5", label: "A5 - Deepseek" },
+        { name: "toolA6", label: "A6 - Kimi" },
+      ],
+    },
+    {
+      key: "tool-usage-b",
+      title: "B. Coding assistants",
+      note: "Rate each coding assistant with one option.",
+      items: [
+        { name: "toolB1", label: "B1 - Codex" },
+        { name: "toolB2", label: "B2 - Claude code" },
+      ],
+    },
+    {
+      key: "tool-usage-c",
+      title: "C. Automation tools",
+      note: "Rate each automation or workflow tool with one option.",
+      items: [
+        { name: "toolC1", label: "C1 - N8n" },
+        { name: "toolC2", label: "C2 - Make" },
+        { name: "toolC3", label: "C3 - Zappier" },
+      ],
+    },
+    {
+      key: "tool-usage-d",
+      title: "D. Work assistants",
+      note: "Rate each work-focused assistant with one option.",
+      items: [
+        { name: "toolD1", label: "D1 - Open claw" },
+        { name: "toolD2", label: "D2 - Hermes" },
+        { name: "toolD3", label: "D3 - Claude Work" },
+        { name: "toolD4", label: "D4 - Openai Work" },
+      ],
+    },
+    {
+      key: "tool-usage-e",
+      title: "E. Creative tools",
+      note: "Rate each creative media tool with one option.",
+      items: [
+        { name: "toolE1", label: "E1 - Banana" },
+        { name: "toolE2", label: "E2 - Veo3" },
+        { name: "toolE3", label: "E3 - madjury" },
+        { name: "toolE4", label: "E4 - suno" },
+        { name: "toolE5", label: "E5 - eleven lsb" },
+        { name: "toolE6", label: "E6 - hygen" },
+      ],
+    },
+    {
+      key: "tool-usage-f",
+      title: "F. Design and notes",
+      note: "Rate each design or note-taking tool with one option.",
+      items: [
+        { name: "toolF1", label: "F1 - Canva" },
+        { name: "toolF2", label: "F2 - plexigk" },
+        { name: "toolF3", label: "F3 - minus" },
+        { name: "toolF4", label: "F4 - gemini notebook" },
+      ],
+    },
+  ];
+
+  const toolUsageValueOrder = {
+    "": 0,
+    "not-yet-try": 0,
+    "just-trying-only": 1,
+    "basic-free": 2,
+    "paid-version": 3,
+    "advance-features": 4,
+  };
 
   const toolOptions = [
     { value: "ChatGPT", label: "ChatGPT" },
@@ -460,7 +542,7 @@
   };
 
   function createInitialAnswers() {
-    return {
+    const answers = {
       name: "",
       email: "",
       roleBackground: "",
@@ -468,8 +550,6 @@
       wantsOther: "",
       pain: [],
       painOther: "",
-      paid: "",
-      paidToolName: "",
       tools: [],
       toolsOther: "",
       aiHoursTotalMonthly: "",
@@ -487,6 +567,14 @@
       training: "",
       trainingCourse: "",
     };
+
+    toolUsageSections.forEach(function (section) {
+      section.items.forEach(function (item) {
+        answers[item.name] = "";
+      });
+    });
+
+    return answers;
   }
 
   function escapeHtml(value) {
@@ -826,9 +914,11 @@
     const wantsComplete =
       answers.wants.length > 0 || isFilled(answers.wantsOther);
     const painComplete = answers.pain.length > 0 || isFilled(answers.painOther);
-    const paidComplete =
-      isFilled(answers.paid) &&
-      (answers.paid !== "yes" || isFilled(answers.paidToolName));
+    const toolUsageComplete = toolUsageSections.every(function (section) {
+      return section.items.every(function (item) {
+        return isFilled(answers[item.name]);
+      });
+    });
     const toolsComplete =
       answers.tools.length > 0 &&
       (!answers.tools.includes("Other") || isFilled(answers.toolsOther));
@@ -847,7 +937,7 @@
       profileComplete,
       wantsComplete,
       painComplete,
-      paidComplete,
+      toolUsageComplete,
       toolsComplete,
       hoursComplete,
       goalComplete,
@@ -895,13 +985,21 @@
     }
 
     if (pageIndex === 2) {
-      if (!isFilled(answers.paid)) {
-        missing.push("paid");
-        focusSelectors.push('[name="paid"]');
-      } else if (answers.paid === "yes" && !isFilled(answers.paidToolName)) {
-        missing.push("paid");
-        focusSelectors.push('[name="paidToolName"]');
-      }
+      toolUsageSections.forEach(function (section) {
+        const sectionMissing = section.items.some(function (item) {
+          return !isFilled(answers[item.name]);
+        });
+
+        if (sectionMissing) {
+          missing.push(section.key);
+          const firstMissingItem = section.items.find(function (item) {
+            return !isFilled(answers[item.name]);
+          });
+          if (firstMissingItem) {
+            focusSelectors.push('[name="' + firstMissingItem.name + '"]');
+          }
+        }
+      });
     }
 
     if (pageIndex === 3) {
@@ -963,18 +1061,20 @@
   function buildToolPlan(answers, band, trackKey, level) {
     const selectedTools = normalizeTools(answers.tools, answers.toolsOther);
     const plan = [];
-    const paidTool = cleanText(answers.paidToolName, 80);
+    const primaryToolUsage = getPrimaryToolUsageEntry(answers);
+    const activeToolUsage = getToolUsageEntries(answers).filter(function (entry) {
+      return toolUsageValueOrder[entry.value] > 0;
+    });
     const roleContext = cleanText(answers.roleBackground, 80);
 
-    if (answers.paid === "yes" && paidTool) {
+    if (primaryToolUsage) {
       plan.push({
         label: "Primary workspace",
-        value: paidTool + " should stay at the center of your workflow.",
-      });
-    } else if (answers.paid === "yes") {
-      plan.push({
-        label: "Primary workspace",
-        value: "Use the paid tool you already have as the default workspace.",
+        value:
+          primaryToolUsage.label +
+          " is your strongest anchor at " +
+          getToolUsageValueLabel(primaryToolUsage.value) +
+          ". Keep one repeatable workflow there first.",
       });
     } else {
       plan.push({
@@ -984,18 +1084,20 @@
       });
     }
 
-    if (!selectedTools.length) {
+    if (!activeToolUsage.length) {
       plan.push({
         label: "Current stack",
         value:
           "You are effectively starting from a blank slate. Keep the first workflow narrow.",
       });
-    } else if (selectedTools.length === 1) {
+    } else if (activeToolUsage.length === 1) {
       plan.push({
         label: "Current stack",
         value:
           "You already have one active tool: " +
-          selectedTools[0] +
+          activeToolUsage[0].label +
+          " at " +
+          getToolUsageValueLabel(activeToolUsage[0].value) +
           ". Build one repeatable use case around it first.",
       });
     } else {
@@ -1003,7 +1105,7 @@
         label: "Current stack",
         value:
           "You already use " +
-          selectedTools.join(", ") +
+          getToolUsageSummary(answers, 4) +
           ". Compare them with the same prompt and keep the better fit for each job.",
       });
     }
@@ -1052,7 +1154,7 @@
         : intermediateModules;
     const lens = trackLens[trackKey] || "";
     const selectedTools = normalizeTools(answers.tools, answers.toolsOther);
-    const paidTool = cleanText(answers.paidToolName, 80);
+    const primaryToolUsage = getPrimaryToolUsageEntry(answers);
     const cards = [];
 
     for (let index = 0; index < weeks; index += 1) {
@@ -1072,8 +1174,14 @@
         );
       }
 
-      if (paidTool) {
-        focusParts.push("Anchor the workflow in " + paidTool + ".");
+      if (primaryToolUsage) {
+        focusParts.push(
+          "Anchor the workflow in " +
+            primaryToolUsage.label +
+            " at " +
+            getToolUsageValueLabel(primaryToolUsage.value) +
+            "."
+        );
       }
 
       cards.push({
@@ -1196,7 +1304,7 @@
       score_s: null,
       score_c: null,
       dominant_type: roadmap.bandKey || "",
-      paid: answers.paid === "yes",
+      paid: hasPremiumToolUsage(answers),
       page_timestamps: {
         submitted_at: submissionSnapshot.submitted_at,
         completed_pages: RESULT_PAGE_INDEX + 1,
@@ -1313,6 +1421,125 @@
       .join("");
   }
 
+  function getToolUsageEntries(answers) {
+    const entries = [];
+
+    toolUsageSections.forEach(function (section) {
+      section.items.forEach(function (item) {
+        const value = answers[item.name];
+        entries.push({
+          key: item.name,
+          label: item.label,
+          value: value || "",
+          sectionKey: section.key,
+        });
+      });
+    });
+
+    return entries;
+  }
+
+  function getToolUsageValueLabel(value) {
+    const option = toolUsageOptions.find(function (item) {
+      return item.value === value;
+    });
+
+    if (!option) {
+      return "";
+    }
+
+    return option.label.replace(/^[A-E]\)\s*/, "");
+  }
+
+  function getToolUsageSummary(answers, limit) {
+    const maxItems = typeof limit === "number" ? limit : 4;
+    const entries = getToolUsageEntries(answers).filter(function (entry) {
+      return entry.value && entry.value !== "not-yet-try";
+    });
+
+    if (!entries.length) {
+      return "";
+    }
+
+    const summary = entries
+      .slice(0, maxItems)
+      .map(function (entry) {
+        return entry.label + " - " + getToolUsageValueLabel(entry.value);
+      })
+      .join(", ");
+
+    if (entries.length > maxItems) {
+      return summary + ", and more";
+    }
+
+    return summary;
+  }
+
+  function getToolUsageCounts(answers) {
+    const counts = {
+      "not-yet-try": 0,
+      "just-trying-only": 0,
+      "basic-free": 0,
+      "paid-version": 0,
+      "advance-features": 0,
+    };
+
+    getToolUsageEntries(answers).forEach(function (entry) {
+      if (Object.prototype.hasOwnProperty.call(counts, entry.value)) {
+        counts[entry.value] += 1;
+      } else {
+        counts["not-yet-try"] += 1;
+      }
+    });
+
+    return counts;
+  }
+
+  function getToolUsageCountSummary(answers) {
+    const counts = getToolUsageCounts(answers);
+    const parts = [
+      counts["not-yet-try"] + " not yet try",
+      counts["just-trying-only"] + " just trying only",
+      counts["basic-free"] + " basic/free",
+      counts["paid-version"] + " paid",
+      counts["advance-features"] + " advanced",
+    ];
+
+    return parts.join(", ");
+  }
+
+  function hasPremiumToolUsage(answers) {
+    return getToolUsageEntries(answers).some(function (entry) {
+      return (
+        entry.value === "paid-version" || entry.value === "advance-features"
+      );
+    });
+  }
+
+  function getPrimaryToolUsageEntry(answers) {
+    const entries = getToolUsageEntries(answers).filter(function (entry) {
+      return toolUsageValueOrder[entry.value] > 0;
+    });
+
+    if (!entries.length) {
+      return null;
+    }
+
+    return entries.reduce(function (best, entry) {
+      if (!best) {
+        return entry;
+      }
+
+      if (
+        toolUsageValueOrder[entry.value] > toolUsageValueOrder[best.value]
+      ) {
+        return entry;
+      }
+
+      return best;
+    }, null);
+  }
+
   function renderTextField(name, label, value, placeholder, autocomplete) {
     return (
       '<label class="text-field">' +
@@ -1345,6 +1572,40 @@
       '" placeholder="' +
       escapeAttr(placeholder || "") +
       '">' +
+      "</label>"
+    );
+  }
+
+  function renderSelectField(name, label, value, options, placeholder) {
+    const optionMarkup = [
+      '<option value="">' + escapeHtml(placeholder || "Select one option") + "</option>",
+    ]
+      .concat(
+        options.map(function (option) {
+          const selected = value === option.value ? " selected" : "";
+          return (
+            '<option value="' +
+            escapeAttr(option.value) +
+            '"' +
+            selected +
+            ">" +
+            escapeHtml(option.label) +
+            "</option>"
+          );
+        })
+      )
+      .join("");
+
+    return (
+      '<label class="select-field">' +
+      "<span>" +
+      escapeHtml(label) +
+      "</span>" +
+      '<select name="' +
+      escapeAttr(name) +
+      '">' +
+      optionMarkup +
+      "</select>" +
       "</label>"
     );
   }
@@ -1507,36 +1768,61 @@
     );
   }
 
-  function renderPaidPage(answers) {
-    const yesNo = renderOptionGroup(
-      "paid",
-      paidToolOptions,
-      answers.paid ? [answers.paid] : [],
-      "radio"
-    );
-
-    const conditional =
-      '<div class="conditional" data-conditional="paid"' +
-      (answers.paid === "yes" ? "" : " hidden") +
-      ">" +
-      renderTextField(
-        "paidToolName",
-        "Which tool do you pay for?",
-        answers.paidToolName,
-        "Enter the paid AI tool name"
-      ) +
+  function renderToolUsagePage(answers) {
+    const legend =
+      '<div class="feature-grid">' +
+      toolUsageOptions
+        .map(function (option) {
+          return (
+            '<article class="feature-card">' +
+            '<p class="kicker">' +
+            escapeHtml(option.label.slice(0, 1)) +
+            "</p>" +
+            "<h4>" +
+            escapeHtml(option.label.slice(3)) +
+            "</h4>" +
+            "</article>"
+          );
+        })
+        .join("") +
       "</div>";
 
-    return renderQuestionCard(
-      "paid",
-      "03",
-      "Do you currently pay for any AI tool?",
-      "If yes, name the tool so the roadmap can anchor on your existing stack.",
-      '<p class="section-note">A paid subscription often changes the learning path and the tool recommendations.</p>' +
-        '<div class="choice-row">' +
-        yesNo +
-        "</div>" +
-        conditional
+    const sections = toolUsageSections
+      .map(function (section, index) {
+        const fields = section.items
+          .map(function (item) {
+            return renderSelectField(
+              item.name,
+              item.label,
+              answers[item.name],
+              toolUsageOptions,
+              "Choose one option"
+            );
+          })
+          .join("");
+
+        return renderQuestionCard(
+          section.key,
+          "03" + String.fromCharCode(65 + index),
+          section.title,
+          section.note,
+          '<div class="field-grid">' + fields + "</div>"
+        );
+      })
+      .join("");
+
+    return (
+      '<div class="page-stack">' +
+      renderQuestionCard(
+        "tool-usage-intro",
+        "03",
+        "Which tools you used",
+        "Each tool select one option.",
+        '<p class="section-note">Use the same scale for every tool so the roadmap can read your current tool depth consistently.</p>' +
+          legend
+      ) +
+      sections +
+      "</div>"
     );
   }
 
@@ -1709,7 +1995,7 @@
       "Not provided"
     );
     const selectedTools = roadmap.tools;
-    const paidTool = cleanText(answers.paidToolName, 80);
+    const toolUsageSummary = getToolUsageSummary(answers, 4) || "Not provided";
     const monthlyTimeSummary = summarizeMonthlyTime(answers);
     const monthlyCostSummary = summarizeMonthlyCost(answers);
     const trainingSummary =
@@ -1734,6 +2020,7 @@
       "Current tools: " +
         (selectedTools.length ? selectedTools.join(", ") : "No active tools selected yet") +
         ".",
+      "Tool usage profile: " + toolUsageSummary + ".",
       "Weighted assessment: " + roadmap.levelSignal.fluencyScore + "/100.",
       "Assessment factors: " + factorSummary + ".",
       "Monthly time: " + (monthlyTimeSummary || "Not provided") + ".",
@@ -1971,13 +2258,8 @@
     const currentTools = roadmap.tools.length
       ? roadmap.tools.join(", ")
       : "No active tools selected yet";
+    const toolUsageLine = getToolUsageSummary(state.answers, 3) || "Not provided";
     const liveLine = state.locked ? scoreLine : "Assessment in progress";
-    const paidTool =
-      state.answers.paid === "yes" && isFilled(state.answers.paidToolName)
-        ? cleanText(state.answers.paidToolName, 80)
-        : state.answers.paid === "yes"
-        ? "Paid tool selected"
-        : "No paid tool selected";
 
     const previewCard =
       '<section class="side-card">' +
@@ -2015,7 +2297,7 @@
       '<p class="kicker">' + (state.locked ? "Locked context" : "Context snapshot") + "</p>" +
       "<h4>Current working set</h4>" +
       '<ul class="insight-list">' +
-      "<li>Paid tool: " + escapeHtml(paidTool) + ".</li>" +
+      "<li>Tool usage: " + escapeHtml(toolUsageLine) + ".</li>" +
       "<li>Assessment score: " +
       escapeHtml(String(roadmap.levelSignal.fluencyScore || "Pending")) +
       "/100.</li>" +
@@ -2057,7 +2339,7 @@
     } else if (pageIndex === 1) {
       pageContent.innerHTML = renderProfilePage(answers);
     } else if (pageIndex === 2) {
-      pageContent.innerHTML = renderPaidPage(answers);
+      pageContent.innerHTML = renderToolUsagePage(answers);
     } else if (pageIndex === 3) {
       pageContent.innerHTML = renderToolsPage(answers);
     } else if (pageIndex === 4) {
@@ -2138,7 +2420,6 @@
   }
 
   function setConditionalVisibility() {
-    setFieldVisibility("paid", getRadioValue("paid") === "yes");
     setFieldVisibility("tools-other", getCheckboxValues("tools").includes("Other"));
     setFieldVisibility("training", getRadioValue("training") === "yes");
   }
@@ -2187,8 +2468,11 @@
       state.answers.pain = getCheckboxValues("pain");
       state.answers.painOther = cleanText(getFieldValue("painOther"), 160);
     } else if (state.currentPage === 2) {
-      state.answers.paid = getRadioValue("paid");
-      state.answers.paidToolName = cleanText(getFieldValue("paidToolName"), 80);
+      toolUsageSections.forEach(function (section) {
+        section.items.forEach(function (item) {
+          state.answers[item.name] = cleanText(getFieldValue(item.name), 40);
+        });
+      });
     } else if (state.currentPage === 3) {
       state.answers.tools = getCheckboxValues("tools");
       state.answers.toolsOther = cleanText(getFieldValue("toolsOther"), 80);
@@ -2302,7 +2586,7 @@
         state.currentPage === 1
           ? "Complete the highlighted profile and context sections before continuing."
           : state.currentPage === 2
-          ? "Confirm whether you pay for an AI tool and name it if you do."
+          ? "Select one option for each tool on this page."
           : state.currentPage === 3
           ? "Select at least one tool, or choose None if you are just starting out."
           : state.currentPage === 4

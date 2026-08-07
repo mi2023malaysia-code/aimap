@@ -123,6 +123,16 @@ body:not([data-page-state="intro"]) .hero-cta {
   display: none;
 }
 
+body:not([data-page-state="intro"]) .hero {
+  display: none;
+}
+
+body:not([data-page-state="intro"]) .section-heading,
+body:not([data-page-state="intro"]) .wizard-copy,
+body:not([data-page-state="intro"]) .step-strip {
+  display: none;
+}
+
 .hero-copy,
 .gauge-panel,
 .survey-card,

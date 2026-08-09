@@ -47,6 +47,20 @@
       step: "Profile",
     },
     {
+      title: "Primary Goal",
+      subtitle: "Choose the track and supporting goals that best match your intent.",
+      copy:
+        "The primary goal drives the learning track name, while the secondary and third goals add extra context for the result.",
+      step: "Goal",
+    },
+    {
+      title: "Training Topics",
+      subtitle: "Choose a status for each topic area.",
+      copy:
+        "The default is no interest. Use the dropdown next to each topic to show how far you have gone.",
+      step: "Training",
+    },
+    {
       title: "Which tools you used",
       subtitle: "Rate the tools you have touched with one option each.",
       copy:
@@ -54,11 +68,11 @@
       step: "Usage",
     },
     {
-      title: "Current Tools",
-      subtitle: "Map the tools that are already active in your workflow.",
+      title: "Knowledge / Skill",
+      subtitle: "Map the AI knowledge and skills you currently use.",
       copy:
-        "The more accurate this picture is, the cleaner the roadmap and tool guidance will be.",
-      step: "Tools",
+        "Choose the status that best matches each skill area. The default is no interest, so you can move quickly through the page.",
+      step: "Skills",
     },
     {
       title: "Monthly Time & Cost",
@@ -68,25 +82,11 @@
       step: "Time",
     },
     {
-      title: "Primary Goal",
-      subtitle: "Choose the track and supporting goals that best match your intent.",
-      copy:
-        "The primary goal drives the learning track name, while the secondary and third goals add extra context for the result.",
-      step: "Goal",
-    },
-    {
       title: "Weighted Assessment",
       subtitle: "Rate the five factors that make up your AI fluency score.",
       copy:
         "Each factor uses a 1-5 scale and a different weight in the final score.",
       step: "Assessment",
-    },
-    {
-      title: "Training History",
-      subtitle: "Avoid repeating content you already know.",
-      copy:
-        "If you have completed formal paid training before, we will avoid duplicating it in the roadmap.",
-      step: "Training",
     },
     {
       title: "Result",
@@ -219,15 +219,103 @@
     "advance-features": 4,
   };
 
-  const toolOptions = [
-    { value: "ChatGPT", label: "ChatGPT" },
-    { value: "Claude", label: "Claude" },
-    { value: "Gemini", label: "Gemini" },
-    { value: "Copilot", label: "Copilot" },
-    { value: "Midjourney", label: "Midjourney" },
-    { value: "None", label: "None" },
-    { value: "Other", label: "Other" },
+  const knowledgeSkillStatusDefaultOption = {
+    value: "no-interest",
+    label: "no interest",
+  };
+
+  const knowledgeSkillStatusValueOrder = {
+    "no-interest": 0,
+    "interest-but-no-yet-learning": 1,
+    basic: 2,
+    immediate: 3,
+    advanced: 4,
+  };
+
+  const knowledgeSkillStatusOptions = [
+    {
+      value: "interest-but-no-yet-learning",
+      label: "interest but no yet learning",
+    },
+    { value: "basic", label: "Basic" },
+    { value: "immediate", label: "Immediate" },
+    { value: "advanced", label: "Advanced" },
   ];
+
+  const knowledgeSkillSections = [
+    {
+      key: "knowledge-skill-a",
+      title: "A. Prompting",
+      note: "Choose the status that best matches your AI prompt skill.",
+      items: [
+        { name: "skillA1", label: "A1 - AI prompt" },
+      ],
+    },
+    {
+      key: "knowledge-skill-b",
+      title: "B. Creative media",
+      note: "Choose the status for each creative generation or editing skill.",
+      items: [
+        { name: "skillB1", label: "B1 - Image gen" },
+        { name: "skillB2", label: "B2 - Video gen" },
+        { name: "skillB3", label: "B3 - Music gen" },
+        { name: "skillB4", label: "B4 - Avatar is" },
+        { name: "skillB5", label: "B5 - Voice clone" },
+        { name: "skillB6", label: "B6 - Image editing" },
+        { name: "skillB7", label: "B7 - Video editing" },
+        { name: "skillB8", label: "B8 - Info graphic" },
+        { name: "skillB9", label: "B9 - AI Podcast" },
+        { name: "skillB10", label: "B10 - Notebook knowledge base" },
+      ],
+    },
+    {
+      key: "knowledge-skill-d",
+      title: "D. Infrastructure and automation",
+      note: "Choose the status for each workflow, routing, and hosting skill.",
+      items: [
+        { name: "skillD1", label: "D1 - N8n workflow" },
+        { name: "skillD2", label: "D2 - Local machine AI self hosting" },
+        { name: "skillD3", label: "D3 - Open router" },
+        { name: "skillD4", label: "D4 - Llm api" },
+        { name: "skillD5", label: "D5 - Cloud AI self hosting" },
+      ],
+    },
+    {
+      key: "knowledge-skill-c",
+      title: "C. Office productivity",
+      note: "Choose the status for each office and communication skill.",
+      items: [
+        { name: "skillC1", label: "C1 - office Productivity" },
+        { name: "skillC2", label: "C2 - Gmail automation" },
+        { name: "skillC3", label: "C3 - Meeting summary" },
+        { name: "skillC4", label: "C4 - AI calender" },
+        { name: "skillC5", label: "C5 - Chatbot whatsapp/telegram" },
+        { name: "skillC6", label: "C6 - Presentation slides" },
+        { name: "skillC7", label: "C7 - Poster," },
+      ],
+    },
+    {
+      key: "knowledge-skill-e",
+      title: "E. Building and agents",
+      note: "Choose the status for each advanced building skill.",
+      items: [
+        { name: "skillE1", label: "E1 - Vibe coding" },
+        { name: "skillE2", label: "E2 - Custom gpt" },
+        { name: "skillE3", label: "E3 - AI Agent" },
+      ],
+    },
+  ];
+
+  const knowledgeSkillFields = [];
+  knowledgeSkillSections.forEach(function (section) {
+    section.items.forEach(function (item) {
+      knowledgeSkillFields.push({
+        name: item.name,
+        label: item.label,
+        sectionKey: section.key,
+      });
+    });
+  });
 
   const weeklyTimeFields = [
     {
@@ -323,10 +411,92 @@
     },
   ];
 
-  const trainingOptions = [
-    { value: "yes", label: "Yes" },
-    { value: "no", label: "No" },
+  const trainingStatusDefaultOption = {
+    value: "no-interest",
+    label: "no interest",
+  };
+
+  const trainingStatusOptions = [
+    {
+      value: "interest-but-not-yet-attended",
+      label: "interest but no yet attend any",
+    },
+    {
+      value: "attend-free-session-only",
+      label: "attend free session only",
+    },
+    {
+      value: "attend-paid-session-only",
+      label: "attend paid session only",
+    },
+    {
+      value: "attend-both-free-and-paid-session",
+      label: "attend both free and paid session",
+    },
   ];
+
+  const trainingTopicSections = [
+    {
+      key: "training-topic-a",
+      title: "A. GenAI",
+      note: "Pick a status for the foundation topic.",
+      items: [
+        {
+          name: "trainingTopicA1",
+          label: "A1 - GenAI / Prompt Engineering",
+        },
+      ],
+    },
+    {
+      key: "training-topic-b",
+      title: "B. Coding and Agents",
+      note: "Pick a status for each coding and automation topic.",
+      items: [
+        { name: "trainingTopicB1", label: "B1 - Coding" },
+        { name: "trainingTopicB2", label: "B2 - AI Agent" },
+        { name: "trainingTopicB3", label: "B3 - AI Automation" },
+      ],
+    },
+    {
+      key: "training-topic-c",
+      title: "C. Media Generation",
+      note: "Pick a status for each media creation topic.",
+      items: [
+        { name: "trainingTopicC1", label: "C1 - Image Gen/Edit" },
+        { name: "trainingTopicC2", label: "C2 - Video Gen/Edit" },
+        { name: "trainingTopicC3", label: "C3 - Audio Gen/Edit" },
+      ],
+    },
+    {
+      key: "training-topic-d",
+      title: "D. Clone and Knowledge",
+      note: "Pick a status for the clone and knowledge topics.",
+      items: [
+        { name: "trainingTopicD1", label: "D1 - AI Clone" },
+        { name: "trainingTopicD2", label: "D2 - Knowledge Agent" },
+      ],
+    },
+    {
+      key: "training-topic-e",
+      title: "E. Business and Productivity",
+      note: "Pick a status for each business workflow topic.",
+      items: [
+        { name: "trainingTopicE1", label: "E1 - AI on Marketing" },
+        { name: "trainingTopicE2", label: "E2 - AI on Administration" },
+        { name: "trainingTopicE3", label: "E3 - AI on Human Resource" },
+        { name: "trainingTopicE4", label: "E4 - AI on data science" },
+        { name: "trainingTopicE5", label: "E5 - AI on Business" },
+        { name: "trainingTopicE6", label: "E6 - AI on Productivity" },
+      ],
+    },
+  ];
+
+  const trainingTopicFields = [];
+  trainingTopicSections.forEach(function (section) {
+    section.items.forEach(function (item) {
+      trainingTopicFields.push(item);
+    });
+  });
 
   const goalTracks = {
     "Career switch": {
@@ -571,7 +741,9 @@
       wantsOther: "",
       pain: ["None", "None", "None"],
       painOther: "",
-      tools: [],
+      tools: knowledgeSkillFields.map(function () {
+        return knowledgeSkillStatusDefaultOption.value;
+      }),
       toolsOther: "",
       aiHoursTotalMonthly: "0",
       aiCostTotalMonthly: "0",
@@ -588,8 +760,9 @@
       verificationJudgment: "1",
       automationBuilding: "1",
       timeCostCommitment: "1",
-      training: "",
-      trainingCourse: "",
+      trainingTopics: trainingTopicFields.map(function () {
+        return trainingStatusDefaultOption.value;
+      }),
     };
 
     toolUsageSections.forEach(function (section) {
@@ -859,6 +1032,24 @@
   }
 
   function normalizeTools(values, otherText) {
+    if (Array.isArray(values) && values.length === knowledgeSkillFields.length) {
+      return values
+        .map(function (value, index) {
+          return {
+            label: knowledgeSkillFields[index].label,
+            value: isKnowledgeSkillStatusValue(value)
+              ? value
+              : knowledgeSkillStatusDefaultOption.value,
+          };
+        })
+        .filter(function (entry) {
+          return knowledgeSkillStatusValueOrder[entry.value] > 0;
+        })
+        .map(function (entry) {
+          return entry.label;
+        });
+    }
+
     const cleaned = [];
     values.forEach(function (tool) {
       if (tool === "None" || tool === "Other") return;
@@ -873,6 +1064,92 @@
     return Array.from(new Set(cleaned.filter(Boolean)));
   }
 
+  function isKnowledgeSkillStatusValue(value) {
+    return Object.prototype.hasOwnProperty.call(
+      knowledgeSkillStatusValueOrder,
+      value
+    );
+  }
+
+  function getKnowledgeSkillEntries(answers) {
+    return knowledgeSkillFields.map(function (field, index) {
+      const value =
+        Array.isArray(answers.tools) && isKnowledgeSkillStatusValue(answers.tools[index])
+          ? answers.tools[index]
+          : knowledgeSkillStatusDefaultOption.value;
+
+      return {
+        key: field.name,
+        label: field.label,
+        value: value,
+        sectionKey: field.sectionKey,
+      };
+    });
+  }
+
+  function getActiveKnowledgeSkillEntries(answers) {
+    return getKnowledgeSkillEntries(answers).filter(function (entry) {
+      return knowledgeSkillStatusValueOrder[entry.value] > 0;
+    });
+  }
+
+  function getPrimaryKnowledgeSkillEntry(answers) {
+    const entries = getActiveKnowledgeSkillEntries(answers);
+
+    if (!entries.length) {
+      return null;
+    }
+
+    return entries.reduce(function (best, entry) {
+      if (!best) {
+        return entry;
+      }
+
+      if (
+        knowledgeSkillStatusValueOrder[entry.value] >
+        knowledgeSkillStatusValueOrder[best.value]
+      ) {
+        return entry;
+      }
+
+      return best;
+    }, null);
+  }
+
+  function getKnowledgeSkillStatusLabel(value) {
+    if (value === knowledgeSkillStatusDefaultOption.value) {
+      return knowledgeSkillStatusDefaultOption.label;
+    }
+
+    const option = knowledgeSkillStatusOptions.find(function (item) {
+      return item.value === value;
+    });
+
+    return option ? option.label : "";
+  }
+
+  function summarizeKnowledgeSkills(answers, limit) {
+    const maxItems = typeof limit === "number" ? limit : 4;
+    const entries = getActiveKnowledgeSkillEntries(answers);
+
+    if (!entries.length) {
+      return "No interest across all knowledge/skills";
+    }
+
+    const summary = entries
+      .slice(0, maxItems)
+      .map(function (entry) {
+        return entry.label + " - " + getKnowledgeSkillStatusLabel(entry.value);
+      })
+      .join(", ");
+
+    if (entries.length > maxItems) {
+      return summary + ", and more";
+    }
+
+    return summary;
+  }
+
   function summarizeSelections(selected, otherText, fallback) {
     const values = Array.isArray(selected) ? selected.slice() : [];
     const other = cleanText(otherText, 120);
@@ -881,6 +1158,54 @@
       return isMeaningfulSelection(value);
     }).join(", ");
     return joined || fallback;
+  }
+
+  function getTrainingStatusLabel(value) {
+    if (value === trainingStatusDefaultOption.value) {
+      return trainingStatusDefaultOption.label;
+    }
+
+    const option = trainingStatusOptions.find(function (item) {
+      return item.value === value;
+    });
+
+    return option ? option.label : "";
+  }
+
+  function summarizeTrainingTopics(answers, limit) {
+    const maxItems = typeof limit === "number" ? limit : 4;
+    const selections = trainingTopicFields
+      .map(function (field, index) {
+        const value =
+          Array.isArray(answers.trainingTopics) && answers.trainingTopics[index]
+            ? answers.trainingTopics[index]
+            : trainingStatusDefaultOption.value;
+
+        return {
+          label: field.label,
+          value: value,
+        };
+      })
+      .filter(function (entry) {
+        return entry.value !== trainingStatusDefaultOption.value;
+      });
+
+    if (!selections.length) {
+      return "No interest across all topics";
+    }
+
+    const summary = selections
+      .slice(0, maxItems)
+      .map(function (entry) {
+        return entry.label + " - " + getTrainingStatusLabel(entry.value);
+      })
+      .join(", ");
+
+    if (selections.length > maxItems) {
+      return summary + ", and more";
+    }
+
+    return summary;
   }
 
   function getAssessmentRating(answers, key) {
@@ -896,7 +1221,7 @@
   }
 
   function calculateLevel(answers) {
-    const tools = normalizeTools(answers.tools, answers.toolsOther);
+    const skills = normalizeTools(answers.tools, answers.toolsOther);
     const toolBreadth = getAssessmentRating(answers, "toolBreadth");
     const promptQuality = getAssessmentRating(answers, "promptQuality");
     const verificationJudgment = getAssessmentRating(answers, "verificationJudgment");
@@ -938,8 +1263,8 @@
       automationBuilding: automationBuilding,
       timeCostCommitment: timeCostCommitment,
       factorScores: factorScores,
-      tools: tools,
-      toolCount: tools.length,
+      tools: skills,
+      toolCount: skills.length,
     };
   }
 
@@ -958,8 +1283,11 @@
       });
     });
     const toolsComplete =
-      answers.tools.length > 0 &&
-      (!answers.tools.includes("Other") || isFilled(answers.toolsOther));
+      Array.isArray(answers.tools) &&
+      answers.tools.length === knowledgeSkillFields.length &&
+      answers.tools.every(function (value) {
+        return isKnowledgeSkillStatusValue(value);
+      });
     const hoursComplete = weeklyTimeFields.every(function (field) {
       return isFilled(answers[field.name]);
     });
@@ -969,8 +1297,11 @@
       return isFilled(answers[factor.key]);
     });
     const trainingComplete =
-      isFilled(answers.training) &&
-      (answers.training !== "yes" || isFilled(answers.trainingCourse));
+      Array.isArray(answers.trainingTopics) &&
+      answers.trainingTopics.length === trainingTopicFields.length &&
+      answers.trainingTopics.every(function (value) {
+        return isFilled(value);
+      });
 
     return [
       profileComplete,
@@ -1030,6 +1361,26 @@
     }
 
     if (pageIndex === 2) {
+      if (!isMeaningfulSelection(answers.goal) && !isFilled(answers.goalOtherSector)) {
+        missing.push("goal");
+        focusSelectors.push('[name="goal"]');
+      }
+    }
+
+    if (pageIndex === 3) {
+      const firstMissingTraining = trainingTopicFields.find(function (field, index) {
+        return !isFilled(
+          Array.isArray(answers.trainingTopics) ? answers.trainingTopics[index] : ""
+        );
+      });
+
+      if (firstMissingTraining) {
+        missing.push("training");
+        focusSelectors.push('[name="' + firstMissingTraining.name + '"]');
+      }
+    }
+
+    if (pageIndex === 4) {
       toolUsageSections.forEach(function (section) {
         const sectionMissing = section.items.some(function (item) {
           return !isFilled(answers[item.name]);
@@ -1047,17 +1398,20 @@
       });
     }
 
-    if (pageIndex === 3) {
-      if (!answers.tools.length) {
+    if (pageIndex === 5) {
+      const firstMissingSkill = knowledgeSkillFields.find(function (field, index) {
+        return !isKnowledgeSkillStatusValue(
+          Array.isArray(answers.tools) ? answers.tools[index] : ""
+        );
+      });
+
+      if (firstMissingSkill) {
         missing.push("tools");
-        focusSelectors.push('[name="tools"]');
-      } else if (answers.tools.includes("Other") && !isFilled(answers.toolsOther)) {
-        missing.push("tools");
-        focusSelectors.push('[name="toolsOther"]');
+        focusSelectors.push('[name="' + firstMissingSkill.name + '"]');
       }
     }
 
-    if (pageIndex === 4) {
+    if (pageIndex === 6) {
       weeklyTimeFields.forEach(function (field) {
         if (!isFilled(answers[field.name])) {
           missing.push("hours");
@@ -1066,30 +1420,13 @@
       });
     }
 
-    if (pageIndex === 5) {
-      if (!isMeaningfulSelection(answers.goal) && !isFilled(answers.goalOtherSector)) {
-        missing.push("goal");
-        focusSelectors.push('[name="goal"]');
-      }
-    }
-
-    if (pageIndex === 6) {
+    if (pageIndex === 7) {
       assessmentQuestions.forEach(function (factor) {
         if (!isFilled(answers[factor.key])) {
           missing.push("assessment-" + factor.key);
           focusSelectors.push('[name="' + factor.key + '"]');
         }
       });
-    }
-
-    if (pageIndex === 7) {
-      if (!isFilled(answers.training)) {
-        missing.push("training");
-        focusSelectors.push('[name="training"]');
-      } else if (answers.training === "yes" && !isFilled(answers.trainingCourse)) {
-        missing.push("training");
-        focusSelectors.push('[name="trainingCourse"]');
-      }
     }
 
     return {
@@ -1104,53 +1441,53 @@
   }
 
   function buildToolPlan(answers, band, trackKey, level) {
-    const selectedTools = normalizeTools(answers.tools, answers.toolsOther);
+    const selectedSkills = normalizeTools(answers.tools, answers.toolsOther);
     const plan = [];
-    const primaryToolUsage = getPrimaryToolUsageEntry(answers);
+    const primarySkill = getPrimaryKnowledgeSkillEntry(answers);
     const activeToolUsage = getToolUsageEntries(answers).filter(function (entry) {
       return toolUsageValueOrder[entry.value] > 0;
     });
     const roleContext = cleanText(answers.roleBackground, 80);
 
-    if (primaryToolUsage) {
+    if (primarySkill) {
       plan.push({
-        label: "Primary workspace",
+        label: "Primary skill anchor",
         value:
-          primaryToolUsage.label +
+          primarySkill.label +
           " is your strongest anchor at " +
-          getToolUsageValueLabel(primaryToolUsage.value) +
+          getKnowledgeSkillStatusLabel(primarySkill.value) +
           ". Keep one repeatable workflow there first.",
       });
     } else {
       plan.push({
-        label: "Primary workspace",
+        label: "Primary skill anchor",
         value:
-          "Start with one general assistant and keep the workflow intentionally simple.",
+          "Start with one general skill area and keep the workflow intentionally simple.",
       });
     }
 
-    if (!activeToolUsage.length) {
+    if (!selectedSkills.length) {
       plan.push({
-        label: "Current stack",
+        label: "Current skill stack",
         value:
           "You are effectively starting from a blank slate. Keep the first workflow narrow.",
       });
-    } else if (activeToolUsage.length === 1) {
+    } else if (selectedSkills.length === 1) {
       plan.push({
-        label: "Current stack",
+        label: "Current skill stack",
         value:
-          "You already have one active tool: " +
-          activeToolUsage[0].label +
+          "You already have one active skill: " +
+          selectedSkills[0] +
           " at " +
-          getToolUsageValueLabel(activeToolUsage[0].value) +
+          getKnowledgeSkillStatusLabel(primarySkill ? primarySkill.value : knowledgeSkillStatusDefaultOption.value) +
           ". Build one repeatable use case around it first.",
       });
     } else {
       plan.push({
-        label: "Current stack",
+        label: "Current skill stack",
         value:
           "You already use " +
-          getToolUsageSummary(answers, 4) +
+          summarizeKnowledgeSkills(answers, 4) +
           ". Compare them with the same prompt and keep the better fit for each job.",
       });
     }
@@ -1198,8 +1535,8 @@
         ? advancedModules
         : intermediateModules;
     const lens = trackLens[trackKey] || "";
-    const selectedTools = normalizeTools(answers.tools, answers.toolsOther);
-    const primaryToolUsage = getPrimaryToolUsageEntry(answers);
+    const selectedSkills = normalizeTools(answers.tools, answers.toolsOther);
+    const primarySkill = getPrimaryKnowledgeSkillEntry(answers);
     const cards = [];
 
     for (let index = 0; index < weeks; index += 1) {
@@ -1211,20 +1548,20 @@
         focusParts.push(lens);
       }
 
-      if (selectedTools.length) {
+      if (selectedSkills.length) {
         focusParts.push(
           "Compare outcomes across " +
-            selectedTools.slice(0, 2).join(" and ") +
+            selectedSkills.slice(0, 2).join(" and ") +
             " when relevant."
         );
       }
 
-      if (primaryToolUsage) {
+      if (primarySkill) {
         focusParts.push(
           "Anchor the workflow in " +
-            primaryToolUsage.label +
+            primarySkill.label +
             " at " +
-            getToolUsageValueLabel(primaryToolUsage.value) +
+            getKnowledgeSkillStatusLabel(primarySkill.value) +
             "."
         );
       }
@@ -1735,7 +2072,7 @@
       '<article class="feature-card">' +
       '<p class="kicker">Context capture</p>' +
       "<h4>Record what you need</h4>" +
-      "<p>We capture your contact details, objective, pain points, tools, monthly time and cost, goal, weighted assessment, and training history.</p>" +
+      "<p>We capture your contact details, objective, pain points, knowledge/skills, monthly time and cost, goal, weighted assessment, and training history.</p>" +
       "</article>" +
       '<article class="feature-card">' +
       '<p class="kicker">Instant roadmap</p>' +
@@ -1911,35 +2248,68 @@
   }
 
   function renderToolsPage(answers) {
-    const checkboxRow = renderOptionGroup(
-      "tools",
-      toolOptions,
-      answers.tools,
-      "checkbox"
-    );
-    const otherVisible = answers.tools.includes("Other");
-    const otherField =
-      '<div class="conditional" data-conditional="tools-other"' +
-      (otherVisible ? "" : " hidden") +
-      ">" +
-      renderTextField(
-        "toolsOther",
-        "Other AI tool",
-        answers.toolsOther,
-        "Name the additional tool you use"
-      ) +
+    const legend =
+      '<div class="feature-grid">' +
+      [knowledgeSkillStatusDefaultOption].concat(knowledgeSkillStatusOptions)
+        .map(function (option) {
+          return (
+            '<article class="feature-card">' +
+            '<p class="kicker">' +
+            escapeHtml(option.label.slice(0, 1).toUpperCase()) +
+            "</p>" +
+            "<h4>" +
+            escapeHtml(option.label) +
+            "</h4>" +
+            "</article>"
+          );
+        })
+        .join("") +
       "</div>";
 
-    return renderQuestionCard(
-      "tools",
-      "04",
-      "Which AI tools do you currently use?",
-      "Select every tool that is active today. Use None if you are not working with one yet.",
-      '<p class="section-note">Select all that apply. If you choose Other, add the tool name below.</p>' +
-        '<div class="chip-grid">' +
-        checkboxRow +
-        "</div>" +
-        otherField
+    let skillIndex = 0;
+    const sections = knowledgeSkillSections
+      .map(function (section, index) {
+        const fields = section.items
+          .map(function (item) {
+            const value =
+              Array.isArray(answers.tools) &&
+              isKnowledgeSkillStatusValue(answers.tools[skillIndex])
+                ? answers.tools[skillIndex]
+                : knowledgeSkillStatusDefaultOption.value;
+            skillIndex += 1;
+            return renderSelectField(
+              item.name,
+              item.label,
+              value,
+              knowledgeSkillStatusOptions,
+              null,
+              knowledgeSkillStatusDefaultOption
+            );
+          })
+          .join("");
+
+        return renderQuestionCard(
+          section.key,
+          "04" + String.fromCharCode(65 + index),
+          section.title,
+          section.note,
+          '<div class="field-grid">' + fields + "</div>"
+        );
+      })
+      .join("");
+
+    return (
+      '<div class="page-stack">' +
+      renderQuestionCard(
+        "skills-intro",
+        "04",
+        "Which AI knowledge/skill do you currently use?",
+        "Select the current level for each skill area.",
+        '<p class="section-note">Default is no interest. Use the dropdown for each skill to show your current level.</p>' +
+          legend
+      ) +
+      sections +
+      "</div>"
     );
   }
 
@@ -2055,33 +2425,68 @@
   }
 
   function renderTrainingPage(answers) {
-    const conditional =
-      '<div class="conditional" data-conditional="training"' +
-      (answers.training === "yes" ? "" : " hidden") +
-      ">" +
-      renderTextField(
-        "trainingCourse",
-        "Course or program name",
-        answers.trainingCourse,
-        "Enter the course or program name"
-      ) +
+    const legend =
+      '<div class="feature-grid">' +
+      [trainingStatusDefaultOption].concat(trainingStatusOptions)
+        .map(function (option) {
+          return (
+            '<article class="feature-card">' +
+            '<p class="kicker">' +
+            escapeHtml(option.label.slice(0, 1).toUpperCase()) +
+            "</p>" +
+            "<h4>" +
+            escapeHtml(option.label) +
+            "</h4>" +
+            "</article>"
+          );
+        })
+        .join("") +
       "</div>";
 
-    return renderQuestionCard(
-      "training",
-      "08",
-      "Have you completed any formal paid AI training or courses before?",
-      "If yes, share the program or course name so we avoid repeating it.",
-      '<p class="section-note">This helps prevent duplicate content in the final roadmap.</p>' +
-        '<div class="choice-row">' +
-        renderOptionGroup(
-          "training",
-          trainingOptions,
-          answers.training ? [answers.training] : [],
-          "radio"
-        ) +
-        "</div>" +
-        conditional
+    let topicIndex = 0;
+    const sections = trainingTopicSections
+      .map(function (section, index) {
+        const fields = section.items
+          .map(function (item) {
+            const value =
+              Array.isArray(answers.trainingTopics) &&
+              isFilled(answers.trainingTopics[topicIndex])
+                ? answers.trainingTopics[topicIndex]
+                : trainingStatusDefaultOption.value;
+            topicIndex += 1;
+            return renderSelectField(
+              item.name,
+              item.label,
+              value,
+              trainingStatusOptions,
+              null,
+              trainingStatusDefaultOption
+            );
+          })
+          .join("");
+
+        return renderQuestionCard(
+          section.key,
+          "08" + String.fromCharCode(65 + index),
+          section.title,
+          section.note,
+          '<div class="field-grid">' + fields + "</div>"
+        );
+      })
+      .join("");
+
+    return (
+      '<div class="page-stack">' +
+      renderQuestionCard(
+        "training-intro",
+        "08",
+        "Training Topics",
+        "Choose a status for each topic area.",
+        '<p class="section-note">Default is no interest. Use the dropdown next to each topic.</p>' +
+          legend
+      ) +
+      sections +
+      "</div>"
     );
   }
 
@@ -2103,14 +2508,11 @@
       answers.goalOtherSector,
       "Not provided"
     );
-    const selectedTools = roadmap.tools;
+    const selectedSkills = roadmap.tools;
     const toolUsageSummary = getToolUsageSummary(answers, 4) || "not yet try";
     const monthlyTimeSummary = summarizeMonthlyTime(answers);
     const monthlyCostSummary = summarizeMonthlyCost(answers);
-    const trainingSummary =
-      answers.training === "yes"
-        ? cleanText(answers.trainingCourse, 80) || "Yes"
-        : "No";
+    const trainingTopicsSummary = summarizeTrainingTopics(answers, 4);
     const factorSummary = roadmap.levelSignal.factorScores
       .map(function (factor) {
         return (
@@ -2126,8 +2528,8 @@
 
     const signalItems = [
       "Background / role: " + roleSummary + ".",
-      "Current tools: " +
-        (selectedTools.length ? selectedTools.join(", ") : "No active tools selected yet") +
+      "Knowledge / skill profile: " +
+        (selectedSkills.length ? selectedSkills.join(", ") : "No active skills selected yet") +
         ".",
       "Tool usage profile: " + toolUsageSummary + ".",
       "Weighted assessment: " + roadmap.levelSignal.fluencyScore + "/100.",
@@ -2135,9 +2537,7 @@
       "Monthly time: " + (monthlyTimeSummary || "Not provided") + ".",
       "Monthly budget: " + (monthlyCostSummary || "Not provided") + ".",
       "AI fluency score: " + roadmap.levelSignal.fluencyScore + "/100.",
-      "Formal training: " +
-        trainingSummary +
-        ".",
+      "Training topics: " + trainingTopicsSummary + ".",
       "Weekly pace: " + roadmap.pacing + ".",
       "What you want: " + wantsSummary + ".",
       "Pain points: " + painSummary + ".",
@@ -2365,9 +2765,9 @@
     const paceLine = roadmap.pacing;
     const monthlyTimeLine = summarizeMonthlyTime(state.answers) || "Pending";
     const monthlyCostLine = summarizeMonthlyCost(state.answers) || "Pending";
-    const currentTools = roadmap.tools.length
+    const currentSkills = roadmap.tools.length
       ? roadmap.tools.join(", ")
-      : "No active tools selected yet";
+      : "No active skills selected yet";
     const toolUsageLine = getToolUsageSummary(state.answers, 3) || "not yet try";
     const liveLine = state.locked ? scoreLine : "Assessment in progress";
 
@@ -2414,7 +2814,7 @@
       "<li>Role / background: " +
       escapeHtml(cleanText(state.answers.roleBackground, 80) || "Pending") +
       ".</li>" +
-      "<li>Tools in use: " + escapeHtml(currentTools) + ".</li>" +
+      "<li>Skills in use: " + escapeHtml(currentSkills) + ".</li>" +
       "<li>Goal: " +
       escapeHtml(
         isMeaningfulSelection(state.answers.goal)
@@ -2453,17 +2853,17 @@
     } else if (pageIndex === 1) {
       pageContent.innerHTML = renderProfilePage(answers);
     } else if (pageIndex === 2) {
-      pageContent.innerHTML = renderToolUsagePage(answers);
-    } else if (pageIndex === 3) {
-      pageContent.innerHTML = renderToolsPage(answers);
-    } else if (pageIndex === 4) {
-      pageContent.innerHTML = renderHoursPage(answers);
-    } else if (pageIndex === 5) {
       pageContent.innerHTML = renderGoalPage(answers);
-    } else if (pageIndex === 6) {
-      pageContent.innerHTML = renderAssessmentPage(answers);
-    } else if (pageIndex === 7) {
+    } else if (pageIndex === 3) {
       pageContent.innerHTML = renderTrainingPage(answers);
+    } else if (pageIndex === 4) {
+      pageContent.innerHTML = renderToolUsagePage(answers);
+    } else if (pageIndex === 5) {
+      pageContent.innerHTML = renderToolsPage(answers);
+    } else if (pageIndex === 6) {
+      pageContent.innerHTML = renderHoursPage(answers);
+    } else if (pageIndex === 7) {
+      pageContent.innerHTML = renderAssessmentPage(answers);
     } else {
       pageContent.innerHTML = renderResultPage(answers, state.finalResult || roadmap);
     }
@@ -2534,8 +2934,7 @@
   }
 
   function setConditionalVisibility() {
-    setFieldVisibility("tools-other", getCheckboxValues("tools").includes("Other"));
-    setFieldVisibility("training", getRadioValue("training") === "yes");
+    return;
   }
 
   function clearErrorState() {
@@ -2590,15 +2989,27 @@
       ];
       state.answers.painOther = cleanText(getFieldValue("painOther"), 160);
     } else if (state.currentPage === 2) {
+      state.answers.goal = getFieldValue("goal") || "None";
+      state.answers.goalSecondary = getFieldValue("goalSecondary") || "None";
+      state.answers.goalThird = getFieldValue("goalThird") || "None";
+      state.answers.goalOtherSector = cleanText(getFieldValue("goalOtherSector"), 120);
+    } else if (state.currentPage === 3) {
+      state.answers.trainingTopics = trainingTopicFields.map(function (field) {
+        return getFieldValue(field.name) || trainingStatusDefaultOption.value;
+      });
+    } else if (state.currentPage === 4) {
       toolUsageSections.forEach(function (section) {
         section.items.forEach(function (item) {
           state.answers[item.name] = cleanText(getFieldValue(item.name), 40);
         });
       });
-    } else if (state.currentPage === 3) {
-      state.answers.tools = getCheckboxValues("tools");
-      state.answers.toolsOther = cleanText(getFieldValue("toolsOther"), 80);
-    } else if (state.currentPage === 4) {
+    } else if (state.currentPage === 5) {
+      state.answers.tools = knowledgeSkillFields.map(function (field) {
+        return isKnowledgeSkillStatusValue(getFieldValue(field.name))
+          ? getFieldValue(field.name)
+          : knowledgeSkillStatusDefaultOption.value;
+      });
+    } else if (state.currentPage === 6) {
       state.answers.aiHoursTotalMonthly = cleanText(
         getFieldValue("aiHoursTotalMonthly"),
         40
@@ -2623,20 +3034,12 @@
         getFieldValue("aiCostLearnMonthly"),
         40
       );
-    } else if (state.currentPage === 5) {
-      state.answers.goal = getFieldValue("goal") || "None";
-      state.answers.goalSecondary = getFieldValue("goalSecondary") || "None";
-      state.answers.goalThird = getFieldValue("goalThird") || "None";
-      state.answers.goalOtherSector = cleanText(getFieldValue("goalOtherSector"), 120);
-    } else if (state.currentPage === 6) {
+    } else if (state.currentPage === 7) {
       state.answers.toolBreadth = getFieldValue("toolBreadth") || "1";
       state.answers.promptQuality = getFieldValue("promptQuality") || "1";
       state.answers.verificationJudgment = getFieldValue("verificationJudgment") || "1";
       state.answers.automationBuilding = getFieldValue("automationBuilding") || "1";
       state.answers.timeCostCommitment = getFieldValue("timeCostCommitment") || "1";
-    } else if (state.currentPage === 7) {
-      state.answers.training = getRadioValue("training");
-      state.answers.trainingCourse = cleanText(getFieldValue("trainingCourse"), 80);
     }
   }
 
@@ -2711,17 +3114,17 @@
         state.currentPage === 1
           ? "Complete the highlighted profile and context sections before continuing."
           : state.currentPage === 2
-          ? "Select one option for each tool on this page."
-          : state.currentPage === 3
-          ? "Select at least one tool, or choose None if you are just starting out."
-          : state.currentPage === 4
-          ? "Enter the monthly hours and cost numbers before continuing."
-          : state.currentPage === 5
           ? "Select the primary goal for this assessment."
-          : state.currentPage === 6
-          ? "Rate the five factors that shape your AI fluency score."
-          : state.currentPage === 7
+          : state.currentPage === 3
           ? "Confirm whether you have completed formal paid training and share the course name if you have."
+          : state.currentPage === 4
+          ? "Select one option for each tool on this page."
+          : state.currentPage === 5
+          ? "Choose a status for each skill area on this page."
+          : state.currentPage === 6
+          ? "Enter the monthly hours and cost numbers before continuing."
+          : state.currentPage === 7
+          ? "Rate the five factors that shape your AI fluency score."
           : "Complete the highlighted fields before continuing.";
       focusFirstSelector(validation.focusSelectors);
       refreshLiveState();

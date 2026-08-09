@@ -2490,6 +2490,7 @@
     );
   }
 
+
   function renderResultPage(answers, roadmap) {
     const displayName = answers.name ? answers.name : "you";
     const roleSummary = cleanText(answers.roleBackground, 120) || "Not provided";
@@ -2513,39 +2514,6 @@
     const monthlyTimeSummary = summarizeMonthlyTime(answers);
     const monthlyCostSummary = summarizeMonthlyCost(answers);
     const trainingTopicsSummary = summarizeTrainingTopics(answers, 4);
-    const factorSummary = roadmap.levelSignal.factorScores
-      .map(function (factor) {
-        return (
-          factor.label +
-          ": " +
-          factor.rating +
-          "/5 (" +
-          factor.weight +
-          "%)"
-        );
-      })
-      .join(", ");
-
-    const signalItems = [
-      "Background / role: " + roleSummary + ".",
-      "Knowledge / skill profile: " +
-        (selectedSkills.length ? selectedSkills.join(", ") : "No active skills selected yet") +
-        ".",
-      "Tool usage profile: " + toolUsageSummary + ".",
-      "Weighted assessment: " + roadmap.levelSignal.fluencyScore + "/100.",
-      "Assessment factors: " + factorSummary + ".",
-      "Monthly time: " + (monthlyTimeSummary || "Not provided") + ".",
-      "Monthly budget: " + (monthlyCostSummary || "Not provided") + ".",
-      "AI fluency score: " + roadmap.levelSignal.fluencyScore + "/100.",
-      "Training topics: " + trainingTopicsSummary + ".",
-      "Weekly pace: " + roadmap.pacing + ".",
-      "What you want: " + wantsSummary + ".",
-      "Pain points: " + painSummary + ".",
-      "Goal focus: " + goalSummary + ".",
-    ];
-
-    const toolPlanItems = roadmap.toolPlan;
-    const moduleCards = roadmap.modules;
     const syncMessage = getSupabaseSyncMessage();
     const syncButtonLabel = getSupabaseSyncButtonLabel();
     const syncBadgeText =
@@ -2554,181 +2522,238 @@
         : state.saveState.status === "saving"
         ? "Syncing to Supabase"
         : "Supabase sync ready";
-
-    const summaryMeta =
-      '<div class="result-meta">' +
-      "<span>Locked result</span>" +
-      "<span>" + escapeHtml(syncBadgeText) + "</span>" +
-      "<span>No further edits</span>" +
-      "</div>";
-
-    const resultActions =
-      '<div class="result-actions">' +
-      '<button type="button" class="secondary-btn" data-action="reset">Retake assessment</button>' +
-      "</div>";
-
-    const metrics =
-      '<div class="result-summary">' +
-      metricCard(
-        "AI fluency score",
-        roadmap.levelSignal.fluencyScore + "/100",
-        factorSummary
-      ) +
-      metricCard(
-        "Track",
-        roadmap.track ? roadmap.track.label : "Pending",
-        roadmap.track ? roadmap.track.description : "Choose a goal to reveal the track."
-      ) +
-      metricCard(
-        "Duration",
-        roadmap.durationText,
-        roadmap.weeklyHours
-          ? formatWeeklyHours(roadmap.weeklyHours) +
-            ". " +
-            capitalizeSentence(roadmap.pacing) +
-            "."
-          : "Based on your monthly commitment."
-      ) +
-      "</div>";
-
     const resultSummary =
       "Prepared for " +
       displayName +
-      ". Weighted assessment: " +
-      roadmap.levelSignal.fluencyScore +
-      "/100. Role/background: " +
-      roleSummary +
-      ". This route points to " +
+      ". Your assessment points to " +
       (roadmap.track ? roadmap.track.label : "a tailored track") +
-      " with " +
+      " at " +
       getPacingArticle(roadmap.pacing) +
       " " +
       roadmap.pacing +
-      ".";
+      ", grounded in your available time, budget, and current skills.";
 
-    const signalCard =
-      '<section class="result-block">' +
-      "<h3>Assessment signals</h3>" +
-      '<ul class="insight-list">' +
-      signalItems
-        .map(function (item) {
-          return "<li>" + escapeHtml(item) + "</li>";
-        })
-        .join("") +
-      "</ul>" +
+    const factorRows = roadmap.levelSignal.factorScores
+      .map(function (factor) {
+        const ratingOption = assessmentScaleOptions.find(function (option) {
+          return Number(option.value) === factor.rating;
+        });
+        const ratingLabel = ratingOption ? ratingOption.label : factor.rating + "/5";
+        const ratingPercent = factor.rating * 20;
+
+        return (
+          '<article class="result-factor">' +
+          '<div class="result-factor__head">' +
+          "<h4>" +
+          escapeHtml(factor.label) +
+          "</h4>" +
+          '<span class="result-factor__weight">' +
+          factor.weight +
+          "% weight</span>" +
+          "</div>" +
+          '<div class="result-factor__bar" role="progressbar" aria-label="' +
+          escapeHtml(factor.label) +
+          '" aria-valuemin="1" aria-valuemax="5" aria-valuenow="' +
+          factor.rating +
+          '"><span style="--factor-progress: ' +
+          ratingPercent +
+          '%"></span></div>' +
+          '<div class="result-factor__rating"><strong>' +
+          escapeHtml(ratingLabel) +
+          "</strong><span>" +
+          factor.rating +
+          " / 5</span></div>" +
+          "</article>"
+        );
+      })
+      .join("");
+
+    const contextItems = [
+      { label: "Role / background", value: roleSummary },
+      { label: "Goal focus", value: goalSummary },
+      {
+        label: "Knowledge / skills",
+        value: selectedSkills.length
+          ? summarizeKnowledgeSkills(answers, 4)
+          : "No active skills selected yet",
+      },
+      { label: "Tool usage", value: toolUsageSummary },
+      { label: "Monthly time", value: monthlyTimeSummary || "Not provided" },
+      { label: "Monthly budget", value: monthlyCostSummary || "Not provided" },
+      { label: "Training signal", value: trainingTopicsSummary },
+      {
+        label: "Learning outcome",
+        value: wantsSummary + ". Friction: " + painSummary + ".",
+      },
+    ];
+    const contextGrid = contextItems
+      .map(function (item) {
+        return (
+          "<div><dt>" +
+          escapeHtml(item.label) +
+          "</dt><dd>" +
+          escapeHtml(item.value) +
+          "</dd></div>"
+        );
+      })
+      .join("");
+
+    const signalSection =
+      '<section class="result-report-section result-signals">' +
+      '<header class="result-section-head">' +
+      '<span class="result-section-index">01</span>' +
+      "<div><p>Assessment signals</p><h3>What is shaping your score</h3>" +
+      "<span>Your five weighted factors, followed by the context used to tailor the roadmap.</span></div>" +
+      "</header>" +
+      '<div class="result-factor-grid">' +
+      factorRows +
+      "</div>" +
+      '<dl class="result-context-grid">' +
+      contextGrid +
+      "</dl>" +
       "</section>";
 
-    const toolCard =
-      '<section class="result-block">' +
-      "<h3>Tool recommendations</h3>" +
-      '<ul class="insight-list">' +
-      toolPlanItems
-        .map(function (item) {
-          return (
-            "<li><strong>" +
-            escapeHtml(item.label) +
-            ":</strong> " +
-            escapeHtml(item.value) +
-            "</li>"
-          );
-        })
-        .join("") +
-      "</ul>" +
+    const recommendationCards = roadmap.toolPlan
+      .map(function (item, index) {
+        return (
+          '<article class="result-recommendation">' +
+          '<span class="result-recommendation__number">' +
+          String(index + 1).padStart(2, "0") +
+          "</span><div><h4>" +
+          escapeHtml(item.label) +
+          "</h4><p>" +
+          escapeHtml(item.value) +
+          "</p></div></article>"
+        );
+      })
+      .join("");
+    const toolSection =
+      '<section class="result-report-section result-tools">' +
+      '<header class="result-section-head">' +
+      '<span class="result-section-index">02</span>' +
+      "<div><p>Tool recommendations</p><h3>Build a smaller, sharper stack</h3>" +
+      "<span>Use these recommendations in sequence instead of adding tools all at once.</span></div>" +
+      "</header>" +
+      '<div class="result-recommendation-grid">' +
+      recommendationCards +
+      "</div>" +
       "</section>";
 
-    const syncCard =
-      '<section class="result-block send-card">' +
-      "<h3>Supabase sync</h3>" +
-      "<p>The contact email you entered is stored with the assessment result.</p>" +
+    const roadmapWeeks = roadmap.modules.length
+      ? '<ol class="roadmap-weeks">' +
+        roadmap.modules
+          .map(function (card) {
+            return (
+              '<li class="roadmap-week">' +
+              '<div class="roadmap-week__marker"><span>Week</span><strong>' +
+              card.week +
+              "</strong></div>" +
+              '<article class="roadmap-week__card">' +
+              '<div class="roadmap-week__head"><h4>' +
+              escapeHtml(card.title) +
+              '</h4><span class="roadmap-week__hours">' +
+              escapeHtml(card.hours) +
+              "</span></div>" +
+              "<p>" +
+              escapeHtml(card.focus) +
+              "</p>" +
+              '<div class="roadmap-week__meta"><span>' +
+              escapeHtml(
+                trackLens[roadmap.track ? roadmap.track.key : "career"] ||
+                  "Professional context"
+              ) +
+              "</span><span>" +
+              escapeHtml(card.stack) +
+              "</span></div>" +
+              "</article></li>"
+            );
+          })
+          .join("") +
+        "</ol>"
+      : '<div class="roadmap-empty">Choose a primary goal and monthly commitment to generate the weekly sequence.</div>';
+    const roadmapSection =
+      '<section class="result-report-section result-roadmap">' +
+      '<header class="result-section-head result-section-head--roadmap">' +
+      '<span class="result-section-index">03</span>' +
+      "<div><p>Week-by-week roadmap</p><h3>Turn fluency into a working habit</h3>" +
+      "<span>" +
+      escapeHtml(roadmap.band.description) +
+      "</span></div>" +
+      '<div class="result-roadmap__pace"><span>Timeline</span><strong>' +
+      escapeHtml(roadmap.durationText) +
+      "</strong><small>" +
+      escapeHtml(capitalizeSentence(roadmap.pacing)) +
+      "</small></div>" +
+      "</header>" +
+      roadmapWeeks +
+      "</section>";
+
+    const scoreHero =
+      '<section class="result-hero" data-card="result">' +
+      '<div class="result-hero__score">' +
+      '<p class="eyebrow">Final roadmap</p>' +
+      '<div class="result-score-lockup">' +
+      '<div class="result-score-dial" style="--score-angle: ' +
+      roadmap.levelSignal.fluencyScore * 3.6 +
+      'deg" role="img" aria-label="AI fluency score ' +
+      roadmap.levelSignal.fluencyScore +
+      ' out of 100"><div><strong>' +
+      roadmap.levelSignal.fluencyScore +
+      "</strong><span>/100</span></div></div>" +
+      '<div class="result-score-copy"><span class="result-score-title">AI fluency score</span>' +
+      "<h2>" +
+      escapeHtml(roadmap.band.label) +
+      " fluency</h2><p>" +
+      escapeHtml(resultSummary) +
+      "</p></div></div>" +
+      '<div class="result-meta"><span>Locked result</span><span>' +
+      escapeHtml(syncBadgeText) +
+      "</span><span>Prepared for " +
+      escapeHtml(displayName) +
+      "</span></div></div>" +
+      '<article class="result-track-card">' +
+      '<p class="result-card-label">Track</p>' +
+      "<h3>" +
+      escapeHtml(roadmap.track ? roadmap.track.label : "Track pending") +
+      "</h3><p>" +
+      escapeHtml(
+        roadmap.track
+          ? roadmap.track.description
+          : "Choose a primary goal to reveal the recommended track."
+      ) +
+      "</p>" +
+      '<dl class="result-track-stats"><div><dt>Primary goal</dt><dd>' +
+      escapeHtml(
+        answers.goal && answers.goal !== "None" ? answers.goal : "Not selected"
+      ) +
+      "</dd></div><div><dt>Commitment</dt><dd>" +
+      escapeHtml(roadmap.durationText) +
+      "</dd></div><div><dt>Working pace</dt><dd>" +
+      escapeHtml(capitalizeSentence(roadmap.pacing)) +
+      "</dd></div></dl></article></section>";
+
+    const resultFooter =
+      '<section class="result-footer">' +
+      '<div><p class="result-card-label">Save your roadmap</p>' +
+      "<h3>Keep this assessment ready for reporting</h3>" +
       '<p class="send-status" data-send-status>' +
       escapeHtml(syncMessage) +
-      "</p>" +
+      "</p></div>" +
+      '<div class="result-footer__actions">' +
       '<button type="button" class="primary-btn" data-action="sync-now">' +
       escapeHtml(syncButtonLabel) +
       "</button>" +
-      "</section>";
-
-    const moduleList =
-      '<section class="result-block module-list">' +
-      '<div class="module-list__head">' +
-      "<h3>Week-by-week roadmap</h3>" +
-      "<p>" +
-      escapeHtml(roadmap.band.description) +
-      "</p>" +
-      "</div>" +
-      '<div class="module-list__items">' +
-      moduleCards
-        .map(function (card) {
-          return (
-            '<article class="module-card">' +
-            '<div class="module-card__head">' +
-            '<span class="module-card__week">Week ' +
-            card.week +
-            "</span>" +
-            '<span class="module-card__hours">' +
-            escapeHtml(card.hours) +
-            "</span>" +
-            "</div>" +
-            '<h4 class="module-card__title">' +
-            escapeHtml(card.title) +
-            "</h4>" +
-            "<p>" +
-            escapeHtml(card.focus) +
-            "</p>" +
-            '<div class="module-card__meta">' +
-            "<span>" +
-            escapeHtml(trackLens[roadmap.track ? roadmap.track.key : "career"] || "Professional context") +
-            "</span>" +
-            "<span>" +
-            escapeHtml(card.stack) +
-            "</span>" +
-            "</div>" +
-            "</article>"
-          );
-        })
-        .join("") +
-      "</div>" +
-      "</section>";
+      '<button type="button" class="secondary-btn" data-action="reset">Retake assessment</button>' +
+      "</div></section>";
 
     return (
       '<section class="result-stage">' +
-      '<section class="question-card result-hero" data-card="result">' +
-      '<p class="eyebrow">Final result</p>' +
-      "<h2>AI fluency score " +
-      roadmap.levelSignal.fluencyScore +
-      "/100" +
-      (roadmap.track ? " - " + escapeHtml(roadmap.track.label) : "") +
-      "</h2>" +
-      "<p>" +
-      escapeHtml(resultSummary) +
-      "</p>" +
-      summaryMeta +
-      resultActions +
-      "</section>" +
-      metrics +
-      '<div class="result-grid">' +
-      signalCard +
-      toolCard +
-      "</div>" +
-      syncCard +
-      moduleList +
+      scoreHero +
+      signalSection +
+      toolSection +
+      roadmapSection +
+      resultFooter +
       "</section>"
-    );
-  }
-
-  function metricCard(label, value, note) {
-    return (
-      '<article class="metric">' +
-      '<span class="metric__label">' +
-      escapeHtml(label) +
-      "</span>" +
-      '<strong class="metric__value">' +
-      escapeHtml(value) +
-      "</strong>" +
-      '<p class="metric__note">' +
-      escapeHtml(note) +
-      "</p>" +
-      "</article>"
     );
   }
 

@@ -75,18 +75,18 @@
       step: "Skills",
     },
     {
-      title: "Monthly Time & Cost",
-      subtitle: "Capture the monthly hours and budget that shape your path.",
-      copy:
-        "The monthly totals shape the roadmap pace, and the budget inputs stay with the result for later review.",
-      step: "Time",
-    },
-    {
       title: "Weighted Assessment",
       subtitle: "Rate the five factors that make up your AI fluency score.",
       copy:
         "Each factor uses a 1-5 scale and a different weight in the final score.",
       step: "Assessment",
+    },
+    {
+      title: "Monthly Time & Cost",
+      subtitle: "Capture the monthly hours and budget that shape your path.",
+      copy:
+        "The monthly totals shape the roadmap pace, and the budget inputs stay with the result for later review.",
+      step: "Time",
     },
     {
       title: "Result",
@@ -1288,13 +1288,13 @@
       answers.tools.every(function (value) {
         return isKnowledgeSkillStatusValue(value);
       });
-    const hoursComplete = weeklyTimeFields.every(function (field) {
-      return isFilled(answers[field.name]);
-    });
     const goalComplete =
       isMeaningfulSelection(answers.goal) || isFilled(answers.goalOtherSector);
     const assessmentComplete = assessmentQuestions.map(function (factor) {
       return isFilled(answers[factor.key]);
+    });
+    const hoursComplete = weeklyTimeFields.every(function (field) {
+      return isFilled(answers[field.name]);
     });
     const trainingComplete =
       Array.isArray(answers.trainingTopics) &&
@@ -1307,11 +1307,11 @@
       profileComplete,
       wantsComplete,
       painComplete,
+      goalComplete,
+      trainingComplete,
       toolUsageComplete,
       toolsComplete,
-      hoursComplete,
-      goalComplete,
-    ].concat(assessmentComplete, [trainingComplete]);
+    ].concat(assessmentComplete, [hoursComplete]);
   }
 
   function getCompletion(answers) {
@@ -1412,19 +1412,19 @@
     }
 
     if (pageIndex === 6) {
-      weeklyTimeFields.forEach(function (field) {
-        if (!isFilled(answers[field.name])) {
-          missing.push("hours");
-          focusSelectors.push('[name="' + field.name + '"]');
+      assessmentQuestions.forEach(function (factor) {
+        if (!isFilled(answers[factor.key])) {
+          missing.push("assessment-" + factor.key);
+          focusSelectors.push('[name="' + factor.key + '"]');
         }
       });
     }
 
     if (pageIndex === 7) {
-      assessmentQuestions.forEach(function (factor) {
-        if (!isFilled(answers[factor.key])) {
-          missing.push("assessment-" + factor.key);
-          focusSelectors.push('[name="' + factor.key + '"]');
+      weeklyTimeFields.forEach(function (field) {
+        if (!isFilled(answers[field.name])) {
+          missing.push("hours");
+          focusSelectors.push('[name="' + field.name + '"]');
         }
       });
     }
@@ -2340,7 +2340,7 @@
 
     return renderQuestionCard(
       "hours",
-      "05",
+      "08",
       "How much monthly time and budget can you commit?",
       "These numbers set the pace and capture the cost side of your AI learning.",
       '<p class="section-note">Enter numeric monthly values. Total hours and total cost go first, then the work and learning split.</p>' +
@@ -2861,9 +2861,9 @@
     } else if (pageIndex === 5) {
       pageContent.innerHTML = renderToolsPage(answers);
     } else if (pageIndex === 6) {
-      pageContent.innerHTML = renderHoursPage(answers);
-    } else if (pageIndex === 7) {
       pageContent.innerHTML = renderAssessmentPage(answers);
+    } else if (pageIndex === 7) {
+      pageContent.innerHTML = renderHoursPage(answers);
     } else {
       pageContent.innerHTML = renderResultPage(answers, state.finalResult || roadmap);
     }
@@ -3010,6 +3010,12 @@
           : knowledgeSkillStatusDefaultOption.value;
       });
     } else if (state.currentPage === 6) {
+      state.answers.toolBreadth = getFieldValue("toolBreadth") || "1";
+      state.answers.promptQuality = getFieldValue("promptQuality") || "1";
+      state.answers.verificationJudgment = getFieldValue("verificationJudgment") || "1";
+      state.answers.automationBuilding = getFieldValue("automationBuilding") || "1";
+      state.answers.timeCostCommitment = getFieldValue("timeCostCommitment") || "1";
+    } else if (state.currentPage === 7) {
       state.answers.aiHoursTotalMonthly = cleanText(
         getFieldValue("aiHoursTotalMonthly"),
         40
@@ -3034,12 +3040,6 @@
         getFieldValue("aiCostLearnMonthly"),
         40
       );
-    } else if (state.currentPage === 7) {
-      state.answers.toolBreadth = getFieldValue("toolBreadth") || "1";
-      state.answers.promptQuality = getFieldValue("promptQuality") || "1";
-      state.answers.verificationJudgment = getFieldValue("verificationJudgment") || "1";
-      state.answers.automationBuilding = getFieldValue("automationBuilding") || "1";
-      state.answers.timeCostCommitment = getFieldValue("timeCostCommitment") || "1";
     }
   }
 
@@ -3122,9 +3122,9 @@
           : state.currentPage === 5
           ? "Choose a status for each skill area on this page."
           : state.currentPage === 6
-          ? "Enter the monthly hours and cost numbers before continuing."
-          : state.currentPage === 7
           ? "Rate the five factors that shape your AI fluency score."
+          : state.currentPage === 7
+          ? "Enter the monthly hours and cost numbers before continuing."
           : "Complete the highlighted fields before continuing.";
       focusFirstSelector(validation.focusSelectors);
       refreshLiveState();

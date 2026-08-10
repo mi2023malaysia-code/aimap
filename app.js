@@ -24,12 +24,24 @@
   const statusProgress = document.querySelector("[data-status-progress]");
   const statusLevel = document.querySelector("[data-status-level]");
   const statusTrack = document.querySelector("[data-status-track]");
+  const draftSaveStatus = document.querySelector("[data-draft-save-status]");
+  const resumeDialog = document.querySelector("[data-resume-dialog]");
+  const resumeSummary = document.querySelector("[data-resume-summary]");
   const SUPABASE_CONFIG = window.__SUPABASE_CONFIG__ || {};
   const SUPABASE_URL = SUPABASE_CONFIG.url || "";
   const SUPABASE_PUBLISHABLE_KEY =
     SUPABASE_CONFIG.publishableKey || SUPABASE_CONFIG.anonKey || "";
-  const SUPABASE_TABLE = SUPABASE_CONFIG.table || "115_assessments";
   const SUPABASE_APP_VERSION = SUPABASE_CONFIG.appVersion || "2026-07-30";
+  const SUPABASE_SAVE_DRAFT_RPC =
+    SUPABASE_CONFIG.saveDraftRpc || "save_115b_assessment_draft";
+  const SUPABASE_LOAD_DRAFT_RPC =
+    SUPABASE_CONFIG.loadDraftRpc || "load_115b_assessment_draft";
+  const SUPABASE_DISCARD_DRAFT_RPC =
+    SUPABASE_CONFIG.discardDraftRpc || "discard_115b_assessment_draft";
+  const SUPABASE_SUBMIT_RPC =
+    SUPABASE_CONFIG.submitRpc || "submit_115b_assessment";
+  const LOCAL_DRAFT_KEY = "115b_ai_fluency_draft_v1";
+  const LOCAL_DRAFT_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 
   const pageMeta = [
     {
@@ -317,36 +329,74 @@
     });
   });
 
+  const monthlyHourDropdownOptions = [
+    { value: "0", label: "0", numericValue: 0 },
+    {
+      value: "Less then 15 hours",
+      label: "Less then 15 hours",
+      numericValue: 8,
+    },
+    { value: "15 - 30 hours", label: "15 - 30 hours", numericValue: 22.5 },
+    { value: "30 - 90 hours", label: "30 - 90 hours", numericValue: 60 },
+    {
+      value: "More then 90 hours",
+      label: "More then 90 hours",
+      numericValue: 90,
+    },
+  ];
+
+  const monthlyCostDropdownOptions = [
+    { value: "0", label: "0", numericValue: 0 },
+    {
+      value: "Less then MYR 100",
+      label: "Less then MYR 100",
+      numericValue: 50,
+    },
+    { value: "100 - 299", label: "100 - 299", numericValue: 200 },
+    { value: "300 - 599", label: "300 - 599", numericValue: 450 },
+    {
+      value: "More then MYR 600",
+      label: "More then MYR 600",
+      numericValue: 600,
+    },
+  ];
+
   const weeklyTimeFields = [
     {
       name: "aiHoursTotalMonthly",
       label: "Total hours on AI (monthly)",
       placeholder: "e.g. 24",
+      type: "hours",
     },
     {
       name: "aiCostTotalMonthly",
       label: "Total cost on AI (total-monthly)",
       placeholder: "e.g. 120",
+      type: "cost",
     },
     {
       name: "aiWorkHoursMonthly",
       label: "Total hours work on AI (monthly)",
       placeholder: "e.g. 16",
+      type: "hours",
     },
     {
       name: "aiLearnHoursMonthly",
       label: "Total hours learn on AI (monthly)",
       placeholder: "e.g. 8",
+      type: "hours",
     },
     {
       name: "aiCostWorkMonthly",
       label: "Total cost work on AI (monthly)",
       placeholder: "e.g. 80",
+      type: "cost",
     },
     {
       name: "aiCostLearnMonthly",
       label: "Total cost learn on AI (monthly)",
       placeholder: "e.g. 40",
+      type: "cost",
     },
   ];
 
@@ -725,6 +775,14 @@
     currentPage: 0,
     locked: false,
     finalResult: null,
+    resumeToken: "",
+    submissionId: "",
+    pendingResume: null,
+    draftSaveState: {
+      status: "idle",
+      message: "",
+      lastSavedAt: "",
+    },
     saveState: {
       status: "idle",
       message: "",
@@ -774,6 +832,390 @@
     return answers;
   }
 
+  function createUuid() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, function (byte) {
+      return byte.toString(16).padStart(2, "0");
+    }).join("");
+
+    return (
+      hex.slice(0, 8) +
+      "-" +
+      hex.slice(8, 12) +
+      "-" +
+      hex.slice(12, 16) +
+      "-" +
+      hex.slice(16, 20) +
+      "-" +
+      hex.slice(20)
+    );
+  }
+
+  function isUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      String(value || "")
+    );
+  }
+
+  function ensureResumeToken() {
+    if (!isUuid(state.resumeToken)) {
+      state.resumeToken = createUuid();
+    }
+    return state.resumeToken;
+  }
+
+  function mergeSavedAnswers(savedAnswers) {
+    const defaults = createInitialAnswers();
+    if (!savedAnswers || typeof savedAnswers !== "object") {
+      return defaults;
+    }
+
+    Object.keys(defaults).forEach(function (key) {
+      if (!Object.prototype.hasOwnProperty.call(savedAnswers, key)) {
+        return;
+      }
+
+      if (Array.isArray(defaults[key])) {
+        if (!Array.isArray(savedAnswers[key])) {
+          return;
+        }
+        defaults[key] = defaults[key].map(function (fallback, index) {
+          return savedAnswers[key][index] == null
+            ? fallback
+            : savedAnswers[key][index];
+        });
+        return;
+      }
+
+      defaults[key] = savedAnswers[key];
+    });
+
+    return defaults;
+  }
+
+  function clearLocalDraft() {
+    try {
+      window.localStorage.removeItem(LOCAL_DRAFT_KEY);
+    } catch (error) {
+      return;
+    }
+  }
+
+  function writeLocalDraft(record) {
+    try {
+      window.localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(record));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function readLocalDraft() {
+    let raw = "";
+    try {
+      raw = window.localStorage.getItem(LOCAL_DRAFT_KEY) || "";
+    } catch (error) {
+      return null;
+    }
+
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      const record = JSON.parse(raw);
+      const savedTime = Date.parse(record.lastSavedAt || "");
+      const isExpired =
+        Number.isFinite(savedTime) && Date.now() - savedTime > LOCAL_DRAFT_MAX_AGE;
+
+      if (
+        !record ||
+        record.version !== 1 ||
+        !isUuid(record.resumeToken) ||
+        !Number.isInteger(record.currentPage) ||
+        record.currentPage < 1 ||
+        record.currentPage > 7 ||
+        !record.answers ||
+        typeof record.answers !== "object" ||
+        isExpired
+      ) {
+        clearLocalDraft();
+        return null;
+      }
+
+      return record;
+    } catch (error) {
+      clearLocalDraft();
+      return null;
+    }
+  }
+
+  function persistDraftLocally() {
+    if (state.locked || state.currentPage < 1 || state.currentPage > 7) {
+      return null;
+    }
+
+    const record = {
+      version: 1,
+      resumeToken: ensureResumeToken(),
+      currentPage: state.currentPage,
+      answers: JSON.parse(JSON.stringify(state.answers)),
+      submissionId: isUuid(state.submissionId) ? state.submissionId : "",
+      appVersion: SUPABASE_APP_VERSION,
+      lastSavedAt: new Date().toISOString(),
+    };
+
+    writeLocalDraft(record);
+    return record;
+  }
+
+  function setDraftSaveState(status, message, savedAt) {
+    state.draftSaveState = {
+      status: status,
+      message: message || "",
+      lastSavedAt: savedAt || state.draftSaveState.lastSavedAt || "",
+    };
+
+    if (draftSaveStatus) {
+      draftSaveStatus.dataset.state = status;
+      draftSaveStatus.textContent = message || "";
+    }
+
+    if (!state.locked && state.currentPage > 0) {
+      nextBtn.disabled = status === "saving";
+    }
+  }
+
+  function getSupabaseRpcUrl(functionName) {
+    return (
+      SUPABASE_URL.replace(/\/+$/, "") +
+      "/rest/v1/rpc/" +
+      encodeURIComponent(functionName)
+    );
+  }
+
+  async function callSupabaseRpc(functionName, payload) {
+    if (typeof window === "undefined" || window.location.protocol === "file:") {
+      throw new Error("Open the app through http:// or https:// to save progress.");
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+      throw new Error("Supabase configuration is missing.");
+    }
+
+    const response = await fetch(getSupabaseRpcUrl(functionName), {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: "Bearer " + SUPABASE_PUBLISHABLE_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      let errorMessage = "Supabase request failed with status " + response.status + ".";
+      try {
+        const errorPayload = responseText ? JSON.parse(responseText) : null;
+        errorMessage = cleanText(
+          errorPayload && (errorPayload.message || errorPayload.hint)
+            ? errorPayload.message || errorPayload.hint
+            : errorMessage,
+          160
+        );
+      } catch (error) {
+        errorMessage = cleanText(responseText, 160) || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    if (!responseText) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(responseText);
+    } catch (error) {
+      return responseText;
+    }
+  }
+
+  async function saveDraftCheckpoint() {
+    const localRecord = persistDraftLocally();
+    if (!localRecord) {
+      return false;
+    }
+
+    setDraftSaveState("saving", "Saving progress...", localRecord.lastSavedAt);
+
+    try {
+      const result = await callSupabaseRpc(SUPABASE_SAVE_DRAFT_RPC, {
+        p_resume_token: localRecord.resumeToken,
+        p_current_page: localRecord.currentPage,
+        p_answers: localRecord.answers,
+        p_app_version: SUPABASE_APP_VERSION,
+      });
+      const savedAt =
+        result && result.last_saved_at
+          ? result.last_saved_at
+          : new Date().toISOString();
+
+      localRecord.lastSavedAt = savedAt;
+      writeLocalDraft(localRecord);
+      setDraftSaveState("saved", "Progress saved", savedAt);
+      return true;
+    } catch (error) {
+      setDraftSaveState(
+        "local",
+        "Saved on this device; cloud save unavailable",
+        localRecord.lastSavedAt
+      );
+      return false;
+    }
+  }
+
+  function getDraftTimestamp(record) {
+    const savedAt = record
+      ? record.lastSavedAt || record.last_saved_at || ""
+      : "";
+    const parsed = Date.parse(savedAt);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function formatDraftSavedAt(value) {
+    const parsed = Date.parse(value || "");
+    if (!Number.isFinite(parsed)) {
+      return "recently";
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(parsed));
+  }
+
+  function showResumeDialog(record) {
+    state.pendingResume = record;
+    if (resumeSummary) {
+      resumeSummary.textContent =
+        "Page " +
+        (record.currentPage + 1) +
+        " of " +
+        TOTAL_PAGES +
+        " was saved " +
+        formatDraftSavedAt(record.lastSavedAt) +
+        ".";
+    }
+
+    if (resumeDialog && typeof resumeDialog.showModal === "function") {
+      resumeDialog.showModal();
+    } else if (resumeDialog) {
+      resumeDialog.setAttribute("open", "");
+    }
+  }
+
+  function hideResumeDialog() {
+    if (!resumeDialog) {
+      return;
+    }
+    if (typeof resumeDialog.close === "function" && resumeDialog.open) {
+      resumeDialog.close();
+    } else {
+      resumeDialog.removeAttribute("open");
+    }
+  }
+
+  async function checkForSavedDraft() {
+    const localRecord = readLocalDraft();
+    if (!localRecord) {
+      return;
+    }
+
+    let resumeRecord = localRecord;
+    try {
+      const cloudRecord = await callSupabaseRpc(SUPABASE_LOAD_DRAFT_RPC, {
+        p_resume_token: localRecord.resumeToken,
+      });
+
+      if (cloudRecord && getDraftTimestamp(cloudRecord) > getDraftTimestamp(localRecord)) {
+        resumeRecord = {
+          version: 1,
+          resumeToken: localRecord.resumeToken,
+          currentPage: Number(cloudRecord.current_page),
+          answers: cloudRecord.answers,
+          appVersion: SUPABASE_APP_VERSION,
+          lastSavedAt: cloudRecord.last_saved_at,
+        };
+        writeLocalDraft(resumeRecord);
+      }
+    } catch (error) {
+      resumeRecord = localRecord;
+    }
+
+    if (state.currentPage === 0 && !state.locked) {
+      showResumeDialog(resumeRecord);
+    }
+  }
+
+  function resumeSavedDraft() {
+    const record = state.pendingResume;
+    if (!record) {
+      hideResumeDialog();
+      return;
+    }
+
+    state.currentPage = clamp(Number(record.currentPage) || 1, 1, 7);
+    state.answers = mergeSavedAnswers(record.answers);
+    state.resumeToken = record.resumeToken;
+    state.submissionId = isUuid(record.submissionId) ? record.submissionId : "";
+    state.locked = false;
+    state.finalResult = null;
+    state.pendingResume = null;
+    state.saveState = { status: "idle", message: "" };
+    state.draftSaveState = {
+      status: "saved",
+      message: "Progress restored",
+      lastSavedAt: record.lastSavedAt || "",
+    };
+    hideResumeDialog();
+    renderPage();
+    setDraftSaveState("saved", "Progress restored", record.lastSavedAt || "");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function discardSavedDraft() {
+    const record = state.pendingResume;
+    clearLocalDraft();
+    state.pendingResume = null;
+    state.resumeToken = "";
+    state.submissionId = "";
+    hideResumeDialog();
+
+    state.currentPage = 0;
+    state.locked = false;
+    state.finalResult = null;
+    state.answers = createInitialAnswers();
+    state.saveState = { status: "idle", message: "" };
+    state.draftSaveState = { status: "idle", message: "", lastSavedAt: "" };
+    renderPage();
+
+    if (record && isUuid(record.resumeToken)) {
+      void callSupabaseRpc(SUPABASE_DISCARD_DRAFT_RPC, {
+        p_resume_token: record.resumeToken,
+      }).catch(function () {
+        return null;
+      });
+    }
+  }
+
   function escapeHtml(value) {
     return String(value == null ? "" : value)
       .replaceAll("&", "&amp;")
@@ -814,6 +1256,98 @@
     }
 
     return Math.max(0, parsed);
+  }
+
+  function findCommitmentOption(options, value) {
+    const text = cleanText(value, 80);
+    return (
+      options.find(function (option) {
+        return option.value === text || option.label === text;
+      }) || null
+    );
+  }
+
+  function getMonthlyHourOptionForNumber(value) {
+    if (value <= 0) return monthlyHourDropdownOptions[0];
+    if (value < 15) return monthlyHourDropdownOptions[1];
+    if (value <= 30) return monthlyHourDropdownOptions[2];
+    if (value <= 90) return monthlyHourDropdownOptions[3];
+    return monthlyHourDropdownOptions[4];
+  }
+
+  function getMonthlyCostOptionForNumber(value) {
+    if (value <= 0) return monthlyCostDropdownOptions[0];
+    if (value < 100) return monthlyCostDropdownOptions[1];
+    if (value <= 299) return monthlyCostDropdownOptions[2];
+    if (value <= 599) return monthlyCostDropdownOptions[3];
+    return monthlyCostDropdownOptions[4];
+  }
+
+  function getCommitmentSelectValue(field, value) {
+    const options =
+      field.type === "cost"
+        ? monthlyCostDropdownOptions
+        : monthlyHourDropdownOptions;
+    const directOption = findCommitmentOption(options, value);
+
+    if (directOption) {
+      return directOption.value;
+    }
+
+    const numericValue = parseNumberValue(value);
+    if (numericValue == null) {
+      return "0";
+    }
+
+    return field.type === "cost"
+      ? getMonthlyCostOptionForNumber(numericValue).value
+      : getMonthlyHourOptionForNumber(numericValue).value;
+  }
+
+  function getMonthlyHourNumber(value) {
+    const option = findCommitmentOption(monthlyHourDropdownOptions, value);
+    if (option) {
+      return option.numericValue;
+    }
+
+    return parseNumberValue(value);
+  }
+
+  function getMonthlyCostNumber(value) {
+    const option = findCommitmentOption(monthlyCostDropdownOptions, value);
+    if (option) {
+      return option.numericValue;
+    }
+
+    return parseNumberValue(value);
+  }
+
+  function getMonthlyHourDisplay(value) {
+    const option = findCommitmentOption(monthlyHourDropdownOptions, value);
+    if (option) {
+      return option.value === "0" ? "0 hrs/month" : option.label;
+    }
+
+    const numericValue = parseNumberValue(value);
+    if (numericValue == null) {
+      return "";
+    }
+
+    return formatMonthlyHours(numericValue);
+  }
+
+  function getMonthlyCostDisplay(value) {
+    const option = findCommitmentOption(monthlyCostDropdownOptions, value);
+    if (option) {
+      return option.value === "0" ? "MYR 0/mo" : option.label;
+    }
+
+    const numericValue = parseNumberValue(value);
+    if (numericValue == null) {
+      return "";
+    }
+
+    return "MYR " + formatSimpleNumber(numericValue) + "/mo";
   }
 
   function formatSimpleNumber(value) {
@@ -874,6 +1408,11 @@
   }
 
   function setNextButtonState() {
+    if (draftSaveStatus) {
+      draftSaveStatus.dataset.state = state.draftSaveState.status;
+      draftSaveStatus.textContent = state.draftSaveState.message || "";
+    }
+
     if (state.locked) {
       nextBtn.hidden = true;
       backBtn.hidden = true;
@@ -888,6 +1427,7 @@
 
     backBtn.hidden = state.currentPage === 0;
     nextBtn.hidden = false;
+    nextBtn.disabled = state.draftSaveState.status === "saving";
 
     if (state.currentPage === 7) {
       nextBtn.textContent = "Generate result";
@@ -907,9 +1447,9 @@
   }
 
   function getMonthlyHours(answers) {
-    const totalHours = parseNumberValue(answers.aiHoursTotalMonthly);
-    const workHours = parseNumberValue(answers.aiWorkHoursMonthly);
-    const learnHours = parseNumberValue(answers.aiLearnHoursMonthly);
+    const totalHours = getMonthlyHourNumber(answers.aiHoursTotalMonthly);
+    const workHours = getMonthlyHourNumber(answers.aiWorkHoursMonthly);
+    const learnHours = getMonthlyHourNumber(answers.aiLearnHoursMonthly);
 
     if (totalHours != null) {
       return totalHours;
@@ -974,22 +1514,25 @@
   }
 
   function summarizeMonthlyTime(answers) {
-    const totalHours = parseNumberValue(answers.aiHoursTotalMonthly);
-    const workHours = parseNumberValue(answers.aiWorkHoursMonthly);
-    const learnHours = parseNumberValue(answers.aiLearnHoursMonthly);
+    const totalHours = getMonthlyHourNumber(answers.aiHoursTotalMonthly);
+    const workHours = getMonthlyHourNumber(answers.aiWorkHoursMonthly);
+    const learnHours = getMonthlyHourNumber(answers.aiLearnHoursMonthly);
+    const totalHoursDisplay = getMonthlyHourDisplay(answers.aiHoursTotalMonthly);
+    const workHoursDisplay = getMonthlyHourDisplay(answers.aiWorkHoursMonthly);
+    const learnHoursDisplay = getMonthlyHourDisplay(answers.aiLearnHoursMonthly);
     const weeklyHours = getWeeklyHours(answers);
     const parts = [];
 
     if (totalHours != null) {
-      parts.push("total " + formatMonthlyHours(totalHours));
+      parts.push("total " + (totalHoursDisplay || formatMonthlyHours(totalHours)));
     }
 
     if (workHours != null) {
-      parts.push("work " + formatMonthlyHours(workHours));
+      parts.push("work " + (workHoursDisplay || formatMonthlyHours(workHours)));
     }
 
     if (learnHours != null) {
-      parts.push("learn " + formatMonthlyHours(learnHours));
+      parts.push("learn " + (learnHoursDisplay || formatMonthlyHours(learnHours)));
     }
 
     if (weeklyHours != null) {
@@ -1000,21 +1543,24 @@
   }
 
   function summarizeMonthlyCost(answers) {
-    const totalCost = parseNumberValue(answers.aiCostTotalMonthly);
-    const workCost = parseNumberValue(answers.aiCostWorkMonthly);
-    const learnCost = parseNumberValue(answers.aiCostLearnMonthly);
+    const totalCost = getMonthlyCostNumber(answers.aiCostTotalMonthly);
+    const workCost = getMonthlyCostNumber(answers.aiCostWorkMonthly);
+    const learnCost = getMonthlyCostNumber(answers.aiCostLearnMonthly);
+    const totalCostDisplay = getMonthlyCostDisplay(answers.aiCostTotalMonthly);
+    const workCostDisplay = getMonthlyCostDisplay(answers.aiCostWorkMonthly);
+    const learnCostDisplay = getMonthlyCostDisplay(answers.aiCostLearnMonthly);
     const parts = [];
 
     if (totalCost != null) {
-      parts.push("total " + formatSimpleNumber(totalCost) + "/mo");
+      parts.push("total " + (totalCostDisplay || formatSimpleNumber(totalCost) + "/mo"));
     }
 
     if (workCost != null) {
-      parts.push("work " + formatSimpleNumber(workCost) + "/mo");
+      parts.push("work " + (workCostDisplay || formatSimpleNumber(workCost) + "/mo"));
     }
 
     if (learnCost != null) {
-      parts.push("learn " + formatSimpleNumber(learnCost) + "/mo");
+      parts.push("learn " + (learnCostDisplay || formatSimpleNumber(learnCost) + "/mo"));
     }
 
     return parts.join(", ");
@@ -1588,6 +2134,7 @@
     const band = bandConfig[bandKey];
     const track = getTrack(answers.goal);
     const monthlyHours = getMonthlyHours(answers);
+    const monthlyHoursDisplay = getMonthlyHourDisplay(answers.aiHoursTotalMonthly);
     const weeklyHours = getWeeklyHours(answers);
     const durationWeeks =
       weeklyHours != null && bandKey ? getDurationWeeks(bandKey, weeklyHours) : null;
@@ -1595,7 +2142,9 @@
       ? durationWeeks +
         " weeks at " +
         formatWeeklyHours(weeklyHours) +
-        (monthlyHours != null ? " (" + formatMonthlyHours(monthlyHours) + ")" : "")
+        (monthlyHours != null
+          ? " (" + (monthlyHoursDisplay || formatMonthlyHours(monthlyHours)) + ")"
+          : "")
       : "Pending monthly commitment";
     const pacing = weeklyHours != null
       ? getPacingLabel(weeklyHours)
@@ -1664,11 +2213,12 @@
   }
 
   function buildSupabasePayload(answers, roadmap) {
+    const submittedAt =
+      typeof Date !== "undefined" ? new Date().toISOString() : "";
     const submissionSnapshot = {
       answers: answers,
       roadmap: roadmap,
-      submitted_at:
-        typeof Date !== "undefined" ? new Date().toISOString() : "",
+      submitted_at: submittedAt,
       app_version: SUPABASE_APP_VERSION,
     };
 
@@ -1677,64 +2227,94 @@
       email: cleanText(answers.email, 120),
       phone: null,
       consent_given: true,
-      stage: "submitted",
-      current_page: RESULT_PAGE_INDEX,
-      question_ids: null,
       answers: submissionSnapshot,
-      score_d: null,
-      score_i: null,
-      score_s: null,
-      score_c: null,
-      dominant_type: roadmap.bandKey || "",
+      fluency_score: roadmap.levelSignal.fluencyScore,
+      fluency_level: roadmap.levelSignal.level,
+      band_key: roadmap.bandKey || "beginner",
+      track_key: roadmap.track ? roadmap.track.key : "",
       paid: hasPremiumToolUsage(answers),
       page_timestamps: {
-        submitted_at: submissionSnapshot.submitted_at,
+        submitted_at: submittedAt,
         completed_pages: RESULT_PAGE_INDEX + 1,
       },
+      app_version: SUPABASE_APP_VERSION,
+      submitted_at: submittedAt,
     };
   }
 
-  async function submitAssessmentToSupabase(answers, roadmap) {
-    if (typeof window === "undefined" || window.location.protocol === "file:") {
-      throw new Error(
-        "Open the app through http:// or https:// so Supabase can receive the submission."
-      );
+  function buildAssessmentExportPayload() {
+    if (!state.locked) {
+      syncAnswersFromCurrentPage();
     }
 
-    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      throw new Error("Supabase config is missing from supabase.config.js.");
-    }
-
-    const payload = buildSupabasePayload(answers, roadmap);
-    const response = await fetch(
-      SUPABASE_URL.replace(/\/+$/, "") +
-        "/rest/v1/" +
-        encodeURIComponent(SUPABASE_TABLE),
-      {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_PUBLISHABLE_KEY,
-          Authorization: "Bearer " + SUPABASE_PUBLISHABLE_KEY,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify(payload),
-      }
+    const answersSnapshot = JSON.parse(JSON.stringify(state.answers));
+    const roadmapSnapshot = JSON.parse(
+      JSON.stringify(state.finalResult || computeRoadmap(answersSnapshot))
     );
 
-    if (!response.ok) {
-      let errorBody = "";
-      try {
-        errorBody = await response.text();
-      } catch (error) {
-        errorBody = "";
-      }
+    return {
+      submission_id: isUuid(state.submissionId) ? state.submissionId : "",
+      resume_token: isUuid(state.resumeToken) ? state.resumeToken : "",
+      export_type: state.locked ? "final" : "draft",
+      exported_at: new Date().toISOString(),
+      app_version: SUPABASE_APP_VERSION,
+      sync_status: state.saveState.status,
+      answers: answersSnapshot,
+      roadmap: roadmapSnapshot,
+    };
+  }
 
-      throw new Error(
-        errorBody ||
-          "Supabase insert failed with status " + String(response.status) + "."
-      );
-    }
+  function getAssessmentExportFilename(payload) {
+    const exportedDate = cleanText(payload.exported_at, 24).slice(0, 10);
+    const personSlug = slugify(state.answers.name || "assessment");
+    const idSlug = payload.submission_id
+      ? payload.submission_id.slice(0, 8)
+      : payload.export_type;
+
+    return (
+      "ai-fluency-assessment-" +
+      personSlug +
+      "-" +
+      (exportedDate || "export") +
+      "-" +
+      idSlug +
+      ".json"
+    );
+  }
+
+  function downloadAssessmentJson() {
+    const payload = buildAssessmentExportPayload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = objectUrl;
+    link.download = getAssessmentExportFilename(payload);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(function () {
+      URL.revokeObjectURL(objectUrl);
+    }, 0);
+  }
+
+  async function submitAssessmentToSupabase(answers, roadmap) {
+    const submissionId = isUuid(state.submissionId)
+      ? state.submissionId
+      : createUuid();
+    const resumeToken = ensureResumeToken();
+    state.submissionId = submissionId;
+    const payload = buildSupabasePayload(answers, roadmap);
+
+    await callSupabaseRpc(SUPABASE_SUBMIT_RPC, {
+      p_submission_id: submissionId,
+      p_resume_token: resumeToken,
+      p_payload: payload,
+    });
+
+    return submissionId;
   }
 
   async function syncCurrentResult() {
@@ -1757,6 +2337,7 @@
 
     try {
       await submitAssessmentToSupabase(answersSnapshot, roadmapSnapshot);
+      clearLocalDraft();
       state.saveState = {
         status: "saved",
         message: "Saved to Supabase.",
@@ -2317,11 +2898,13 @@
     const summaryFields = weeklyTimeFields
       .slice(0, 2)
       .map(function (field) {
-        return renderNumberField(
+        return renderSelectField(
           field.name,
           field.label,
-          answers[field.name],
-          field.placeholder
+          getCommitmentSelectValue(field, answers[field.name]),
+          field.type === "cost"
+            ? monthlyCostDropdownOptions
+            : monthlyHourDropdownOptions
         );
       })
       .join("");
@@ -2329,11 +2912,13 @@
     const breakdownFields = weeklyTimeFields
       .slice(2)
       .map(function (field) {
-        return renderNumberField(
+        return renderSelectField(
           field.name,
           field.label,
-          answers[field.name],
-          field.placeholder
+          getCommitmentSelectValue(field, answers[field.name]),
+          field.type === "cost"
+            ? monthlyCostDropdownOptions
+            : monthlyHourDropdownOptions
         );
       })
       .join("");
@@ -2343,13 +2928,16 @@
       "08",
       "How much monthly time and budget can you commit?",
       "These numbers set the pace and capture the cost side of your AI learning.",
-      '<p class="section-note">Enter numeric monthly values. Total hours and total cost go first, then the work and learning split.</p>' +
+      '<p class="section-note">Choose monthly ranges. Total hours and total cost go first, then the work and learning split.</p>' +
         '<div class="field-grid">' +
         summaryFields +
         "</div>" +
         '<p class="section-note">Now break the monthly numbers into work and learning.</p>' +
         '<div class="field-grid">' +
         breakdownFields +
+        "</div>" +
+        '<div class="actions">' +
+        '<button type="button" class="secondary-btn" data-action="download-json">Download assessment JSON</button>' +
         "</div>"
     );
   }
@@ -2743,6 +3331,7 @@
       '<button type="button" class="primary-btn" data-action="sync-now">' +
       escapeHtml(syncButtonLabel) +
       "</button>" +
+      '<button type="button" class="secondary-btn" data-action="download-json">Download assessment JSON</button>' +
       '<button type="button" class="secondary-btn" data-action="reset">Retake assessment</button>' +
       "</div></section>";
 
@@ -3041,30 +3630,12 @@
       state.answers.automationBuilding = getFieldValue("automationBuilding") || "1";
       state.answers.timeCostCommitment = getFieldValue("timeCostCommitment") || "1";
     } else if (state.currentPage === 7) {
-      state.answers.aiHoursTotalMonthly = cleanText(
-        getFieldValue("aiHoursTotalMonthly"),
-        40
-      );
-      state.answers.aiCostTotalMonthly = cleanText(
-        getFieldValue("aiCostTotalMonthly"),
-        40
-      );
-      state.answers.aiWorkHoursMonthly = cleanText(
-        getFieldValue("aiWorkHoursMonthly"),
-        40
-      );
-      state.answers.aiLearnHoursMonthly = cleanText(
-        getFieldValue("aiLearnHoursMonthly"),
-        40
-      );
-      state.answers.aiCostWorkMonthly = cleanText(
-        getFieldValue("aiCostWorkMonthly"),
-        40
-      );
-      state.answers.aiCostLearnMonthly = cleanText(
-        getFieldValue("aiCostLearnMonthly"),
-        40
-      );
+      weeklyTimeFields.forEach(function (field) {
+        state.answers[field.name] = getCommitmentSelectValue(
+          field,
+          getFieldValue(field.name)
+        );
+      });
     }
   }
 
@@ -3124,8 +3695,8 @@
     updateChrome(roadmap, completion, state.currentPage);
   }
 
-  function handleNext() {
-    if (state.locked) {
+  async function handleNext() {
+    if (state.locked || state.draftSaveState.status === "saving") {
       return;
     }
 
@@ -3159,7 +3730,12 @@
     clearErrorState();
 
     if (state.currentPage === 7) {
+      await saveDraftCheckpoint();
       state.finalResult = computeRoadmap(state.answers);
+      state.submissionId = isUuid(state.submissionId)
+        ? state.submissionId
+        : createUuid();
+      persistDraftLocally();
       state.locked = true;
       state.currentPage = RESULT_PAGE_INDEX;
       state.saveState = {
@@ -3168,16 +3744,17 @@
       };
       renderPage();
       window.scrollTo({ top: 0, behavior: "smooth" });
-      void syncCurrentResult();
+      await syncCurrentResult();
       return;
     }
 
     state.currentPage += 1;
     renderPage();
     window.scrollTo({ top: 0, behavior: "smooth" });
+    await saveDraftCheckpoint();
   }
 
-  function handleBack() {
+  async function handleBack() {
     if (state.locked) {
       return;
     }
@@ -3187,13 +3764,25 @@
       state.currentPage -= 1;
       renderPage();
       window.scrollTo({ top: 0, behavior: "smooth" });
+      if (state.currentPage > 0) {
+        await saveDraftCheckpoint();
+      }
     }
   }
 
   function handleReset() {
+    clearLocalDraft();
     state.currentPage = 0;
     state.locked = false;
     state.finalResult = null;
+    state.resumeToken = "";
+    state.submissionId = "";
+    state.pendingResume = null;
+    state.draftSaveState = {
+      status: "idle",
+      message: "",
+      lastSavedAt: "",
+    };
     state.saveState = {
       status: "idle",
       message: "",
@@ -3207,6 +3796,10 @@
     void syncCurrentResult();
   }
 
+  function handleDownloadJson() {
+    downloadAssessmentJson();
+  }
+
   function wireEvents() {
     const startButtons = document.querySelectorAll(
       '[data-action="start-assessment"]'
@@ -3214,7 +3807,7 @@
     startButtons.forEach(function (button) {
       button.addEventListener("click", function (event) {
         event.preventDefault();
-        handleNext();
+        void handleNext();
       });
     });
 
@@ -3242,7 +3835,7 @@
 
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-      handleNext();
+      void handleNext();
     });
 
     form.addEventListener("click", function (event) {
@@ -3252,7 +3845,7 @@
       }
       if (target.closest('[data-action="back"]')) {
         event.preventDefault();
-        handleBack();
+        void handleBack();
       }
       if (target.closest('[data-action="reset"]')) {
         event.preventDefault();
@@ -3262,9 +3855,41 @@
         event.preventDefault();
         handleSyncNow();
       }
+      if (target.closest('[data-action="download-json"]')) {
+        event.preventDefault();
+        handleDownloadJson();
+      }
+    });
+
+    if (resumeDialog) {
+      resumeDialog.addEventListener("cancel", function (event) {
+        event.preventDefault();
+      });
+      resumeDialog.addEventListener("click", function (event) {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+          return;
+        }
+        if (target.closest('[data-action="resume-draft"]')) {
+          event.preventDefault();
+          resumeSavedDraft();
+        }
+        if (target.closest('[data-action="discard-draft"]')) {
+          event.preventDefault();
+          discardSavedDraft();
+        }
+      });
+    }
+
+    window.addEventListener("beforeunload", function () {
+      if (!state.locked && state.currentPage > 0 && state.currentPage < 8) {
+        syncAnswersFromCurrentPage();
+        persistDraftLocally();
+      }
     });
   }
 
   wireEvents();
   renderPage();
+  void checkForSavedDraft();
 })();

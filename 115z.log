@@ -159,3 +159,35 @@ commit new brach reorder_page2 to GitHub repository mi2023malaysia-code/aimap; a
 
 [2026-08-09T19:21:01+08:00] Assistant 66
 Appended all missing timestamped conversation turns, created branch `reorder_page2`, committed the transcript update, and pushed the branch to GitHub.
+
+[2026-08-09T19:24:57+08:00] User 70
+append all previous converrsion
+
+[2026-08-09T19:24:57+08:00] Assistant 67
+Appended the latest request and completion entry to `115z.log` while preserving the timestamped transcript sequence.
+
+[2026-08-09T20:28:40+08:00] User 71
+modify webapp:
+
+save data into supabase, save data on continue/nextpage, ask for resume data if halfway terminate, save as new data if result generated.
+
+[2026-08-09T20:28:40+08:00] Assistant 68
+Implemented local and Supabase checkpoint saving after validated page navigation, a resume-or-start-new prompt for interrupted assessments, and idempotent immutable final submissions. Added the live secure `115b_` database tables, scoped RPCs, RLS protections, repository migrations, and end-to-end verification.
+
+[2026-08-09T20:28:40+08:00] User 72
+deploy into vercel; append conversion;
+
+[2026-08-09T20:28:40+08:00] Assistant 69
+Appended the missing persistence conversation to `115z.log` and deployed the Supabase persistence build to Vercel production at https://115-delta.vercel.app.
+
+[2026-08-11T04:03:17+08:00] User 73
+resumr
+
+[2026-08-11T04:03:17+08:00] Assistant 70
+Updated Page 08 monthly time and budget fields from numeric inputs to dropdown ranges, added assessment JSON download buttons on Page 08 and the result screen, kept range values compatible with roadmap pacing, and validated `app.js` syntax.
+
+[2026-08-11T04:03:17+08:00] User 74
+git commit branch change_hour; deploy vercel; append conversion
+
+[2026-08-11T04:03:17+08:00] Assistant 71
+Prepared branch `change_hour`, committed the current workspace snapshot with the Page 08 dropdown/export update and transcript entry, and started the Vercel deployment flow.

@@ -1,0 +1,998 @@
+{
+  "assessmentName": "AI Fluency Assessment",
+  "sourceFile": "app.js",
+  "optionSets": {
+    "objectiveOptions": [
+      {
+        "value": "None",
+        "label": "None"
+      },
+      {
+        "value": "Assess my current AI fluency",
+        "label": "Assess my current AI fluency"
+      },
+      {
+        "value": "Get a practical learning roadmap",
+        "label": "Get a practical learning roadmap"
+      },
+      {
+        "value": "Identify the right tools for my workflow",
+        "label": "Identify the right tools for my workflow"
+      },
+      {
+        "value": "Improve productivity in my current role",
+        "label": "Improve productivity in my current role"
+      },
+      {
+        "value": "Support a product or side project",
+        "label": "Support a product or side project"
+      },
+      {
+        "value": "Align AI learning with business outcomes",
+        "label": "Align AI learning with business outcomes"
+      }
+    ],
+    "painOptions": [
+      {
+        "value": "None",
+        "label": "None"
+      },
+      {
+        "value": "Too many tools to evaluate",
+        "label": "Too many tools to evaluate"
+      },
+      {
+        "value": "No clear starting point",
+        "label": "No clear starting point"
+      },
+      {
+        "value": "I can use AI, but not consistently",
+        "label": "I can use AI, but not consistently"
+      },
+      {
+        "value": "Limited time to learn",
+        "label": "Limited time to learn"
+      },
+      {
+        "value": "I need better prompts and workflows",
+        "label": "I need better prompts and workflows"
+      },
+      {
+        "value": "I need more confidence in output quality",
+        "label": "I need more confidence in output quality"
+      }
+    ],
+    "goalOptions": [
+      {
+        "value": "None",
+        "label": "None"
+      },
+      {
+        "value": "Career switch",
+        "label": "Career switch"
+      },
+      {
+        "value": "Upskill in current job",
+        "label": "Upskill in current job"
+      },
+      {
+        "value": "Build a product/side project",
+        "label": "Build a product or side project"
+      },
+      {
+        "value": "Academic/research",
+        "label": "Academic or research"
+      },
+      {
+        "value": "General curiosity",
+        "label": "General curiosity"
+      }
+    ],
+    "trainingStatusOptions": [
+      {
+        "value": "no-interest",
+        "label": "no interest"
+      },
+      {
+        "value": "interest-but-not-yet-attended",
+        "label": "interest but no yet attend any"
+      },
+      {
+        "value": "attend-free-session-only",
+        "label": "attend free session only"
+      },
+      {
+        "value": "attend-paid-session-only",
+        "label": "attend paid session only"
+      },
+      {
+        "value": "attend-both-free-and-paid-session",
+        "label": "attend both free and paid session"
+      }
+    ],
+    "toolUsageOptions": [
+      {
+        "value": "not-yet-try",
+        "label": "A) not yet try"
+      },
+      {
+        "value": "just-trying-only",
+        "label": "B) just trying only"
+      },
+      {
+        "value": "basic-free",
+        "label": "C) use basic/free version"
+      },
+      {
+        "value": "paid-version",
+        "label": "D) use paid version"
+      },
+      {
+        "value": "advance-features",
+        "label": "E) use advance features"
+      }
+    ],
+    "knowledgeSkillStatusOptions": [
+      {
+        "value": "no-interest",
+        "label": "no interest"
+      },
+      {
+        "value": "interest-but-no-yet-learning",
+        "label": "interest but no yet learning"
+      },
+      {
+        "value": "basic",
+        "label": "Basic"
+      },
+      {
+        "value": "immediate",
+        "label": "Immediate"
+      },
+      {
+        "value": "advanced",
+        "label": "Advanced"
+      }
+    ],
+    "assessmentScaleOptions": [
+      {
+        "value": "1",
+        "label": "Not Yet"
+      },
+      {
+        "value": "2",
+        "label": "Early"
+      },
+      {
+        "value": "3",
+        "label": "Functional"
+      },
+      {
+        "value": "4",
+        "label": "Strong"
+      },
+      {
+        "value": "5",
+        "label": "Highly mature"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "profile",
+      "title": "Profile",
+      "cards": [
+        {
+          "id": "contact-details",
+          "title": "Contact details",
+          "fields": [
+            {
+              "name": "name",
+              "label": "Full name",
+              "type": "text"
+            },
+            {
+              "name": "email",
+              "label": "Email address",
+              "type": "email"
+            },
+            {
+              "name": "roleBackground",
+              "label": "Role / background",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "id": "objective",
+          "title": "What do you want this assessment to deliver?",
+          "fields": [
+            {
+              "name": "wantsPrimary",
+              "label": "Primary Objective",
+              "type": "select",
+              "defaultValue": "None",
+              "optionsSet": "objectiveOptions"
+            },
+            {
+              "name": "wantsSecondary",
+              "label": "Secondary Objective",
+              "type": "select",
+              "defaultValue": "None",
+              "optionsSet": "objectiveOptions"
+            },
+            {
+              "name": "wantsThird",
+              "label": "Third Objective",
+              "type": "select",
+              "defaultValue": "None",
+              "optionsSet": "objectiveOptions"
+            },
+            {
+              "name": "wantsOther",
+              "label": "Other objective",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "id": "pain",
+          "title": "What is currently slowing your AI learning?",
+          "fields": [
+            {
+              "name": "painPrimary",
+              "label": "Primary Pain Point",
+              "type": "select",
+              "defaultValue": "None",
+              "optionsSet": "painOptions"
+            },
+            {
+              "name": "painSecondary",
+              "label": "Secondary Pain Point",
+              "type": "select",
+              "defaultValue": "None",
+              "optionsSet": "painOptions"
+            },
+            {
+              "name": "painThird",
+              "label": "Third Pain Point",
+              "type": "select",
+              "defaultValue": "None",
+              "optionsSet": "painOptions"
+            },
+            {
+              "name": "painOther",
+              "label": "Other pain point",
+              "type": "textarea"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "title": "Primary Goal",
+      "fields": [
+        {
+          "name": "goal",
+          "label": "Primary Goal",
+          "type": "select",
+          "defaultValue": "None",
+          "optionsSet": "goalOptions"
+        },
+        {
+          "name": "goalSecondary",
+          "label": "Secondary Goal",
+          "type": "select",
+          "defaultValue": "None",
+          "optionsSet": "goalOptions"
+        },
+        {
+          "name": "goalThird",
+          "label": "Third Goal",
+          "type": "select",
+          "defaultValue": "None",
+          "optionsSet": "goalOptions"
+        },
+        {
+          "name": "goalOtherSector",
+          "label": "Other Sector",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "training-topics",
+      "title": "Training Topics",
+      "statusOptionsSet": "trainingStatusOptions",
+      "groups": [
+        {
+          "id": "training-topic-a",
+          "title": "A. GenAI",
+          "note": "Pick a status for the foundation topic.",
+          "fields": [
+            {
+              "name": "trainingTopicA1",
+              "label": "A1 - GenAI / Prompt Engineering",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "training-topic-b",
+          "title": "B. Coding and Agents",
+          "note": "Pick a status for each coding and automation topic.",
+          "fields": [
+            {
+              "name": "trainingTopicB1",
+              "label": "B1 - Coding",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicB2",
+              "label": "B2 - AI Agent",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicB3",
+              "label": "B3 - AI Automation",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "training-topic-c",
+          "title": "C. Media Generation",
+          "note": "Pick a status for each media creation topic.",
+          "fields": [
+            {
+              "name": "trainingTopicC1",
+              "label": "C1 - Image Gen/Edit",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicC2",
+              "label": "C2 - Video Gen/Edit",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicC3",
+              "label": "C3 - Audio Gen/Edit",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "training-topic-d",
+          "title": "D. Clone and Knowledge",
+          "note": "Pick a status for the clone and knowledge topics.",
+          "fields": [
+            {
+              "name": "trainingTopicD1",
+              "label": "D1 - AI Clone",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicD2",
+              "label": "D2 - Knowledge Agent",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "training-topic-e",
+          "title": "E. Business and Productivity",
+          "note": "Pick a status for each business workflow topic.",
+          "fields": [
+            {
+              "name": "trainingTopicE1",
+              "label": "E1 - AI on Marketing",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicE2",
+              "label": "E2 - AI on Administration",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicE3",
+              "label": "E3 - AI on Human Resource",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicE4",
+              "label": "E4 - AI on data science",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicE5",
+              "label": "E5 - AI on Business",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            },
+            {
+              "name": "trainingTopicE6",
+              "label": "E6 - AI on Productivity",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "trainingStatusOptions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tool-usage",
+      "title": "Which tools you used",
+      "optionsSet": "toolUsageOptions",
+      "groups": [
+        {
+          "id": "tool-usage-a",
+          "title": "A. Core assistants",
+          "note": "Rate each general-purpose assistant with one option.",
+          "fields": [
+            {
+              "name": "toolA1",
+              "label": "A1 - Chatgpt",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolA2",
+              "label": "A2 -Gemini / google AI studio",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolA3",
+              "label": "A3 - Claude",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolA4",
+              "label": "A4 - Copilot",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolA5",
+              "label": "A5 - Deepseek",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolA6",
+              "label": "A6 - Kimi",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            }
+          ]
+        },
+        {
+          "id": "tool-usage-b",
+          "title": "B. Coding assistants",
+          "note": "Rate each coding assistant with one option.",
+          "fields": [
+            {
+              "name": "toolB1",
+              "label": "B1 - Codex",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolB2",
+              "label": "B2 - Claude code",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            }
+          ]
+        },
+        {
+          "id": "tool-usage-c",
+          "title": "C. Automation tools",
+          "note": "Rate each automation or workflow tool with one option.",
+          "fields": [
+            {
+              "name": "toolC1",
+              "label": "C1 - N8n",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolC2",
+              "label": "C2 - Make",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolC3",
+              "label": "C3 - Zappier",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            }
+          ]
+        },
+        {
+          "id": "tool-usage-d",
+          "title": "D. Work assistants",
+          "note": "Rate each work-focused assistant with one option.",
+          "fields": [
+            {
+              "name": "toolD1",
+              "label": "D1 - Open claw",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolD2",
+              "label": "D2 - Hermes",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolD3",
+              "label": "D3 - Claude Work",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolD4",
+              "label": "D4 - Openai Work",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            }
+          ]
+        },
+        {
+          "id": "tool-usage-e",
+          "title": "E. Creative tools",
+          "note": "Rate each creative media tool with one option.",
+          "fields": [
+            {
+              "name": "toolE1",
+              "label": "E1 - Banana",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolE2",
+              "label": "E2 - Veo3",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolE3",
+              "label": "E3 - madjury",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolE4",
+              "label": "E4 - suno",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolE5",
+              "label": "E5 - eleven lsb",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolE6",
+              "label": "E6 - hygen",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            }
+          ]
+        },
+        {
+          "id": "tool-usage-f",
+          "title": "F. Design and notes",
+          "note": "Rate each design or note-taking tool with one option.",
+          "fields": [
+            {
+              "name": "toolF1",
+              "label": "F1 - Canva",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolF2",
+              "label": "F2 - plexigk",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolF3",
+              "label": "F3 - minus",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            },
+            {
+              "name": "toolF4",
+              "label": "F4 - gemini notebook",
+              "type": "select",
+              "defaultValue": "not-yet-try",
+              "optionsSet": "toolUsageOptions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "knowledge-skills",
+      "title": "Knowledge / Skill",
+      "statusOptionsSet": "knowledgeSkillStatusOptions",
+      "groups": [
+        {
+          "id": "knowledge-skill-a",
+          "title": "A. Prompting",
+          "note": "Choose the status that best matches your AI prompt skill.",
+          "fields": [
+            {
+              "name": "skillA1",
+              "label": "A1 - AI prompt",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "knowledge-skill-b",
+          "title": "B. Creative media",
+          "note": "Choose the status for each creative generation or editing skill.",
+          "fields": [
+            {
+              "name": "skillB1",
+              "label": "B1 - Image gen",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB2",
+              "label": "B2 - Video gen",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB3",
+              "label": "B3 - Music gen",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB4",
+              "label": "B4 - Avatar is",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB5",
+              "label": "B5 - Voice clone",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB6",
+              "label": "B6 - Image editing",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB7",
+              "label": "B7 - Video editing",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB8",
+              "label": "B8 - Info graphic",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB9",
+              "label": "B9 - AI Podcast",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillB10",
+              "label": "B10 - Notebook knowledge base",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "knowledge-skill-d",
+          "title": "D. Infrastructure and automation",
+          "note": "Choose the status for each workflow, routing, and hosting skill.",
+          "fields": [
+            {
+              "name": "skillD1",
+              "label": "D1 - N8n workflow",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillD2",
+              "label": "D2 - Local machine AI self hosting",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillD3",
+              "label": "D3 - Open router",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillD4",
+              "label": "D4 - Llm api",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillD5",
+              "label": "D5 - Cloud AI self hosting",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "knowledge-skill-c",
+          "title": "C. Office productivity",
+          "note": "Choose the status for each office and communication skill.",
+          "fields": [
+            {
+              "name": "skillC1",
+              "label": "C1 - office Productivity",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillC2",
+              "label": "C2 - Gmail automation",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillC3",
+              "label": "C3 - Meeting summary",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillC4",
+              "label": "C4 - AI calender",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillC5",
+              "label": "C5 - Chatbot whatsapp/telegram",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillC6",
+              "label": "C6 - Presentation slides",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillC7",
+              "label": "C7 - Poster,",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            }
+          ]
+        },
+        {
+          "id": "knowledge-skill-e",
+          "title": "E. Building and agents",
+          "note": "Choose the status for each advanced building skill.",
+          "fields": [
+            {
+              "name": "skillE1",
+              "label": "E1 - Vibe coding",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillE2",
+              "label": "E2 - Custom gpt",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            },
+            {
+              "name": "skillE3",
+              "label": "E3 - AI Agent",
+              "type": "select",
+              "defaultValue": "no-interest",
+              "optionsSet": "knowledgeSkillStatusOptions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "monthly-time-cost",
+      "title": "Monthly Time & Cost",
+      "fields": [
+        {
+          "name": "aiHoursTotalMonthly",
+          "label": "Total hours on AI (monthly)",
+          "type": "number",
+          "placeholder": "e.g. 24"
+        },
+        {
+          "name": "aiCostTotalMonthly",
+          "label": "Total cost on AI (total-monthly)",
+          "type": "number",
+          "placeholder": "e.g. 120"
+        },
+        {
+          "name": "aiWorkHoursMonthly",
+          "label": "Total hours work on AI (monthly)",
+          "type": "number",
+          "placeholder": "e.g. 16"
+        },
+        {
+          "name": "aiLearnHoursMonthly",
+          "label": "Total hours learn on AI (monthly)",
+          "type": "number",
+          "placeholder": "e.g. 8"
+        },
+        {
+          "name": "aiCostWorkMonthly",
+          "label": "Total cost work on AI (monthly)",
+          "type": "number",
+          "placeholder": "e.g. 80"
+        },
+        {
+          "name": "aiCostLearnMonthly",
+          "label": "Total cost learn on AI (monthly)",
+          "type": "number",
+          "placeholder": "e.g. 40"
+        }
+      ]
+    }
+  ],
+  "weightedAssessment": {
+    "title": "Weighted Assessment",
+    "scaleOptionsSet": "assessmentScaleOptions",
+    "questions": [
+      {
+        "key": "toolBreadth",
+        "title": "Tool breadth",
+        "weight": 30,
+        "prompt": "How broad is your current AI tool use across tasks and contexts?",
+        "note": "1 means one narrow tool setup. 5 means a broad stack used across many tasks.",
+        "type": "select",
+        "defaultValue": "1",
+        "optionsSet": "assessmentScaleOptions"
+      },
+      {
+        "key": "promptQuality",
+        "title": "Prompt quality and task framing",
+        "weight": 30,
+        "prompt": "How well do you structure prompts, context, and task framing before asking for output?",
+        "note": "1 means vague asks. 5 means consistently clear, specific, and reusable prompts.",
+        "type": "select",
+        "defaultValue": "1",
+        "optionsSet": "assessmentScaleOptions"
+      },
+      {
+        "key": "verificationJudgment",
+        "title": "Verification and judgment",
+        "weight": 15,
+        "prompt": "How consistently do you check outputs, judge quality, and catch errors?",
+        "note": "1 means you rarely verify. 5 means you regularly validate and critique the output.",
+        "type": "select",
+        "defaultValue": "1",
+        "optionsSet": "assessmentScaleOptions"
+      },
+      {
+        "key": "automationBuilding",
+        "title": "Automation / building ability",
+        "weight": 15,
+        "prompt": "How much do you automate, connect tools, or build repeatable AI workflows?",
+        "note": "1 means no automation yet. 5 means you regularly build or automate with AI.",
+        "type": "select",
+        "defaultValue": "1",
+        "optionsSet": "assessmentScaleOptions"
+      },
+      {
+        "key": "timeCostCommitment",
+        "title": "Time & cost commitment",
+        "weight": 10,
+        "prompt": "How much monthly time and budget can you realistically commit to learning and using AI?",
+        "note": "1 means very limited monthly time or budget. 5 means you can consistently invest both.",
+        "type": "select",
+        "defaultValue": "1",
+        "optionsSet": "assessmentScaleOptions"
+      }
+    ]
+  }
+}

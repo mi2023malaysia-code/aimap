@@ -11,7 +11,9 @@ A static Sprint 1 MVP for the AI Fluency Assessment and Path Recommender.
 - Time-based pacing note and duration estimate
 - Week-by-week module list
 - Result reset / retake flow
-- Supabase-backed result sync for completed assessments
+- Supabase-backed checkpoint saves after each validated page
+- Resume prompt for assessments interrupted before completion
+- Idempotent result sync for completed assessments
 
 ## How to open
 
@@ -22,5 +24,9 @@ For Supabase syncing, use an `http://` or `https://` origin rather than `file://
 
 - The app is intentionally dependency-free so it can run directly from the workspace.
 - Results are computed instantly in the browser.
-- Completed assessments are inserted into the connected Supabase project in
-  `public."115_assessments"` using the project publishable key.
+- In-progress answers are stored locally and through scoped Supabase RPCs in
+  `public."115b_assessment_drafts"`.
+- Completed results are inserted as immutable snapshots in
+  `public."115b_assessment_submissions"`. Direct anonymous table access is
+  disabled; the web app uses purpose-specific RPCs with an unguessable resume
+  token.

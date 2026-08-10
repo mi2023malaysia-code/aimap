@@ -2261,10 +2261,19 @@
 
       if (index === 7) {
         entry.fields = weeklyTimeFields.map(function (field) {
+          const options =
+            field.type === "cost"
+              ? monthlyCostDropdownOptions
+              : monthlyHourDropdownOptions;
+          const currentValue = getFieldValue(field.name);
+          const suggestedOption = findCommitmentOption(options, currentValue);
           return {
             name: field.name,
             label: field.label,
             question: field.label,
+            suggested_answer: suggestedOption
+              ? suggestedOption.label
+              : getCommitmentSelectValue(field, currentValue),
             type: field.type,
           };
         });

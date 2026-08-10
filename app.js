@@ -2251,6 +2251,27 @@
     const roadmapSnapshot = JSON.parse(
       JSON.stringify(state.finalResult || computeRoadmap(answersSnapshot))
     );
+    const questionSnapshot = pageMeta.map(function (meta, index) {
+      const entry = {
+        page: String(index + 1).padStart(2, "0"),
+        title: meta.title,
+        subtitle: meta.subtitle,
+        copy: meta.copy,
+      };
+
+      if (index === 7) {
+        entry.fields = weeklyTimeFields.map(function (field) {
+          return {
+            name: field.name,
+            label: field.label,
+            question: field.label,
+            type: field.type,
+          };
+        });
+      }
+
+      return entry;
+    });
 
     return {
       submission_id: isUuid(state.submissionId) ? state.submissionId : "",
@@ -2259,6 +2280,7 @@
       exported_at: new Date().toISOString(),
       app_version: SUPABASE_APP_VERSION,
       sync_status: state.saveState.status,
+      questions: questionSnapshot,
       answers: answersSnapshot,
       roadmap: roadmapSnapshot,
     };

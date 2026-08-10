@@ -2248,6 +2248,40 @@
     }
 
     const answersSnapshot = JSON.parse(JSON.stringify(state.answers));
+    answersSnapshot.trainingTopics = trainingTopicSections.map(function (section, sectionIndex) {
+      return {
+        section: String(sectionIndex + 1).padStart(2, "0"),
+        key: section.key,
+        title: section.title,
+        note: section.note,
+        items: section.items.map(function (item, itemIndex) {
+          const fieldIndex = trainingTopicFields.findIndex(function (field) {
+            return field.name === item.name;
+          });
+          const answerValue =
+            fieldIndex >= 0 &&
+            Array.isArray(state.answers.trainingTopics) &&
+            isFilled(state.answers.trainingTopics[fieldIndex])
+              ? state.answers.trainingTopics[fieldIndex]
+              : trainingStatusDefaultOption.value;
+          return {
+            index: String(itemIndex + 1).padStart(2, "0"),
+            name: item.name,
+            question: item.label,
+            answer: answerValue,
+            suggested_answer: getTrainingStatusLabel(answerValue) || answerValue,
+            dropdownlist: [
+              trainingStatusDefaultOption,
+            ].concat(trainingStatusOptions).map(function (option) {
+              return {
+                value: option.value,
+                label: option.label,
+              };
+            }),
+          };
+        }),
+      };
+    });
     const roadmapSnapshot = JSON.parse(
       JSON.stringify(state.finalResult || computeRoadmap(answersSnapshot))
     );

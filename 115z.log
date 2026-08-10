@@ -199,3 +199,9 @@ output beside answer/question also include dropdown suggest answer; git commit; 
 
 [2026-08-11T06:25:03+08:00] Assistant 72
 Added `suggested_answer` to the JSON export for the dropdown-based monthly commitment fields, preserving the existing `question` and `answer` data, and prepared the updated transcript entry for commit and deploy.
+
+[2026-08-11T07:16:19+08:00] User 76
+git commit; depoly  vercel; append conversion;
+
+[2026-08-11T07:16:19+08:00] Assistant 73
+Expanded the training-topic export so each item now includes `question`, `answer`, `suggested_answer`, and a per-item `dropdownlist`, keeping subsection 1 aligned with subsection 2 in the JSON output.

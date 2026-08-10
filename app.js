@@ -2318,24 +2318,244 @@
         copy: meta.copy,
       };
 
-      if (index === 7) {
-        entry.fields = weeklyTimeFields.map(function (field) {
-          const options =
-            field.type === "cost"
-              ? monthlyCostDropdownOptions
-              : monthlyHourDropdownOptions;
-          const currentValue = getFieldValue(field.name);
-          const suggestedOption = findCommitmentOption(options, currentValue);
+      if (index === 1) {
+        entry.sections = [
+          {
+            section: "01",
+            key: "profile-objective",
+            title: "Objective",
+            note: "Pick the outcome you want.",
+            items: [
+              {
+                name: "wantsPrimary",
+                question: "Primary Objective",
+                answer: answersSnapshot.wants[0],
+                suggested_answer: answersSnapshot.wants[0],
+                dropdownlist: objectiveDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+              {
+                name: "wantsSecondary",
+                question: "Secondary Objective",
+                answer: answersSnapshot.wants[1],
+                suggested_answer: answersSnapshot.wants[1],
+                dropdownlist: objectiveDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+              {
+                name: "wantsThird",
+                question: "Third Objective",
+                answer: answersSnapshot.wants[2],
+                suggested_answer: answersSnapshot.wants[2],
+                dropdownlist: objectiveDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+            ],
+          },
+          {
+            section: "02",
+            key: "profile-pain",
+            title: "Pain points",
+            note: "Pick the main friction you feel.",
+            items: [
+              {
+                name: "painPrimary",
+                question: "Primary Pain Point",
+                answer: answersSnapshot.pain[0],
+                suggested_answer: answersSnapshot.pain[0],
+                dropdownlist: painDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+              {
+                name: "painSecondary",
+                question: "Secondary Pain Point",
+                answer: answersSnapshot.pain[1],
+                suggested_answer: answersSnapshot.pain[1],
+                dropdownlist: painDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+              {
+                name: "painThird",
+                question: "Third Pain Point",
+                answer: answersSnapshot.pain[2],
+                suggested_answer: answersSnapshot.pain[2],
+                dropdownlist: painDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+            ],
+          },
+        ];
+      }
+
+      if (index === 2) {
+        entry.sections = [
+          {
+            section: "01",
+            key: "goal-primary",
+            title: "Primary goal",
+            note: "Choose the main goal.",
+            items: [
+              {
+                name: "goal",
+                question: "Primary Goal",
+                answer: answersSnapshot.goal,
+                suggested_answer: answersSnapshot.goal,
+                dropdownlist: goalDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+              {
+                name: "goalSecondary",
+                question: "Secondary Goal",
+                answer: answersSnapshot.goalSecondary,
+                suggested_answer: answersSnapshot.goalSecondary,
+                dropdownlist: goalDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+              {
+                name: "goalThird",
+                question: "Third Goal",
+                answer: answersSnapshot.goalThird,
+                suggested_answer: answersSnapshot.goalThird,
+                dropdownlist: goalDropdownOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              },
+            ],
+          },
+        ];
+      }
+
+      if (index === 3) {
+        entry.sections = trainingTopicSections.map(function (section, sectionIndex) {
           return {
-            name: field.name,
-            label: field.label,
-            question: field.label,
-            suggested_answer: suggestedOption
-              ? suggestedOption.label
-              : getCommitmentSelectValue(field, currentValue),
-            type: field.type,
+            section: String(sectionIndex + 1).padStart(2, "0"),
+            key: section.key,
+            title: section.title,
+            note: section.note,
+            items: section.items.map(function (item, itemIndex) {
+              const fieldIndex = trainingTopicFields.findIndex(function (field) {
+                return field.name === item.name;
+              });
+              const answerValue =
+                fieldIndex >= 0 &&
+                Array.isArray(answersSnapshot.trainingTopics) &&
+                isFilled(answersSnapshot.trainingTopics[fieldIndex])
+                  ? answersSnapshot.trainingTopics[fieldIndex]
+                  : trainingStatusDefaultOption.value;
+              return {
+                index: String(itemIndex + 1).padStart(2, "0"),
+                name: item.name,
+                question: item.label,
+                answer: answerValue,
+                suggested_answer: getTrainingStatusLabel(answerValue) || answerValue,
+                dropdownlist: [
+                  trainingStatusDefaultOption,
+                ].concat(trainingStatusOptions).map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              };
+            }),
           };
         });
+      }
+
+      if (index === 4) {
+        entry.sections = toolUsageSections.map(function (section, sectionIndex) {
+          return {
+            section: String(sectionIndex + 1).padStart(2, "0"),
+            key: section.key,
+            title: section.title,
+            note: section.note,
+            items: section.items.map(function (item, itemIndex) {
+              const answerValue = answersSnapshot[item.name] || "not-yet-try";
+              return {
+                index: String(itemIndex + 1).padStart(2, "0"),
+                name: item.name,
+                question: item.label,
+                answer: answerValue,
+                suggested_answer:
+                  getToolUsageValueLabel(answerValue) || answerValue,
+                dropdownlist: toolUsageOptions.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              };
+            }),
+          };
+        });
+      }
+
+      if (index === 5) {
+        entry.sections = knowledgeSkillSections.map(function (section, sectionIndex) {
+          return {
+            section: String(sectionIndex + 1).padStart(2, "0"),
+            key: section.key,
+            title: section.title,
+            note: section.note,
+            items: section.items.map(function (item, itemIndex) {
+              const fieldIndex = knowledgeSkillFields.findIndex(function (field) {
+                return field.name === item.name;
+              });
+              const answerValue =
+                fieldIndex >= 0 &&
+                Array.isArray(answersSnapshot.tools) &&
+                isKnowledgeSkillStatusValue(answersSnapshot.tools[fieldIndex])
+                  ? answersSnapshot.tools[fieldIndex]
+                  : knowledgeSkillStatusDefaultOption.value;
+              return {
+                index: String(itemIndex + 1).padStart(2, "0"),
+                name: item.name,
+                question: item.label,
+                answer: answerValue,
+                suggested_answer:
+                  getKnowledgeSkillStatusLabel(answerValue) || answerValue,
+                dropdownlist: [
+                  knowledgeSkillStatusDefaultOption,
+                ].concat(knowledgeSkillStatusOptions).map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              };
+            }),
+          };
+        });
+      }
+
+      if (index === 7) {
+        entry.sections = [
+          {
+            section: "01",
+            key: "monthly-time-cost",
+            title: "Monthly time and cost",
+            note: "Choose the monthly range for each commitment.",
+            items: weeklyTimeFields.map(function (field, itemIndex) {
+              const options =
+                field.type === "cost"
+                  ? monthlyCostDropdownOptions
+                  : monthlyHourDropdownOptions;
+              const currentValue = getFieldValue(field.name);
+              const suggestedOption = findCommitmentOption(options, currentValue);
+              return {
+                index: String(itemIndex + 1).padStart(2, "0"),
+                name: field.name,
+                question: field.label,
+                answer: getCommitmentSelectValue(field, currentValue),
+                suggested_answer: suggestedOption
+                  ? suggestedOption.label
+                  : getCommitmentSelectValue(field, currentValue),
+                dropdownlist: options.map(function (option) {
+                  return { value: option.value, label: option.label };
+                }),
+              };
+            }),
+          },
+        ];
       }
 
       return entry;

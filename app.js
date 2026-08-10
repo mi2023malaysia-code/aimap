@@ -2248,6 +2248,31 @@
     }
 
     const answersSnapshot = JSON.parse(JSON.stringify(state.answers));
+    answersSnapshot.toolUsage = toolUsageSections.map(function (section, sectionIndex) {
+      return {
+        section: String(sectionIndex + 1).padStart(2, "0"),
+        key: section.key,
+        title: section.title,
+        note: section.note,
+        items: section.items.map(function (item, itemIndex) {
+          const answerValue = answersSnapshot[item.name] || "not-yet-try";
+          return {
+            index: String(itemIndex + 1).padStart(2, "0"),
+            name: item.name,
+            question: item.label,
+            answer: answerValue,
+            suggested_answer:
+              getToolUsageValueLabel(answerValue) || answerValue,
+            dropdownlist: toolUsageOptions.map(function (option) {
+              return {
+                value: option.value,
+                label: option.label,
+              };
+            }),
+          };
+        }),
+      };
+    });
     answersSnapshot.trainingTopics = trainingTopicSections.map(function (section, sectionIndex) {
       return {
         section: String(sectionIndex + 1).padStart(2, "0"),

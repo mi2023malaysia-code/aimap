@@ -217,3 +217,10 @@ modify json: do the same to subsection of the page dropdownlist ; if need to mod
 
 [2026-08-10T07:43:03+08:00] Assistant 75
 Extended the page-level JSON export so the dropdown-based pages are grouped into subsection objects, and each exported item now includes `question`, `answer`, `suggested_answer`, and `dropdownlist` without changing the rendered layout.
+
+[2026-08-11T18:43:20+08:00] User 79
+deploy to vercel https://vercel.com/mi2023alaysia
+
+[2026-08-11T18:55:41+08:00] Assistant 76
+Deployed the project to Vercel production at https://115-delta.vercel.app with Ready status.
+
